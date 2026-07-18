@@ -61,3 +61,12 @@ variable "ecr_repository_names" {
     error_message = "ecr_repository_names must contain at least one service name."
   }
 }
+variable "deployment_queue_name" {
+  description = "Logical name for the deployment event SQS queue."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9-]+$", var.deployment_queue_name))
+    error_message = "deployment_queue_name must contain only lowercase letters, numbers, and hyphens."
+  }
+}

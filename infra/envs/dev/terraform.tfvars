@@ -25,3 +25,5 @@ ecr_repository_names = [
   "notifications",
   "frontend"
 ]
+
+deployment_queue_name = "deployment-events"

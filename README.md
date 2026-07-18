@@ -39,10 +39,12 @@ Completed:
   security group IDs, secret/KMS ARNs, and safe RDS connection metadata.
 - ECR repositories for `api`, `worker`, `notifications`, and `frontend`.
 - ECR image scan on push, immutable tags, and lifecycle cleanup policies.
+- SQS deployment-events queue and dead-letter queue.
+- SQS redrive policy for failed deployment messages.
 
 Not started yet:
 
-- IAM, SQS/DLQ
+- IAM
 - EKS and add-ons
 - Java services
 - Docker images
@@ -64,7 +66,8 @@ Not started yet:
 │   ├── 04-interview-cheatsheet.md
 │   ├── 05-rds-networking-notes.md
 │   ├── 06-real-world-devops-tickets.md
-│   └── 07-ecr-deep-dive.md
+│   ├── 07-ecr-deep-dive.md
+│   └── 08-sqs-dlq-deep-dive.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -73,8 +76,10 @@ Not started yet:
 │       │   └── Reusable networking module
 │       ├── ecr/
 │       │   └── Reusable ECR module for service image repositories
-│       └── rds/
-│           └── RDS networking and security preparation module
+│       ├── rds/
+│       │   └── RDS networking and security preparation module
+│       └── sqs/
+│           └── Reusable SQS plus DLQ module
 ├── PROJECT_MASTER_PLAN.md
 ├── PROJECT_STATUS.md
 └── AGENTS.md
@@ -112,3 +117,4 @@ Start with:
 - [RDS Networking Notes](docs/05-rds-networking-notes.md)
 - [Real-World DevOps Tickets](docs/06-real-world-devops-tickets.md)
 - [ECR Deep Dive](docs/07-ecr-deep-dive.md)
+- [SQS And DLQ Deep Dive](docs/08-sqs-dlq-deep-dive.md)

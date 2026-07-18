@@ -81,3 +81,32 @@ output "ecr_repository_arns" {
   description = "ARNs of the ECR repositories."
   value       = module.ecr.repository_arns
 }
+output "deployment_queue_name" {
+  description = "Name of the deployment events SQS queue."
+  value       = module.sqs.queue_name
+}
+
+output "deployment_queue_url" {
+  description = "URL of the deployment events SQS queue."
+  value       = module.sqs.queue_url
+}
+
+output "deployment_queue_arn" {
+  description = "ARN of the deployment events SQS queue."
+  value       = module.sqs.queue_arn
+}
+
+output "deployment_dlq_name" {
+  description = "Name of the deployment events dead-letter queue."
+  value       = module.sqs.dlq_name
+}
+
+output "deployment_dlq_url" {
+  description = "URL of the deployment events dead-letter queue."
+  value       = module.sqs.dlq_url
+}
+
+output "deployment_dlq_arn" {
+  description = "ARN of the deployment events dead-letter queue."
+  value       = module.sqs.dlq_arn
+}

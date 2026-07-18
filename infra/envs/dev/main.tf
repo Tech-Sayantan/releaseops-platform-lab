@@ -44,3 +44,16 @@ module "ecr" {
     ManagedBy   = "terraform"
   }
 }
+module "sqs" {
+  source = "../../modules/sqs"
+
+  name_prefix = "${var.project_name}-${var.environment}"
+  queue_name  = var.deployment_queue_name
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    ManagedBy   = "terraform"
+  }
+}

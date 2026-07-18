@@ -1,6 +1,6 @@
 # ReleaseOps Platform Lab - Status
 
-Last updated: 2026-07-18  
+Last updated: 2026-07-19
 Master plan: `PROJECT_MASTER_PLAN.md`  
 Target teardown complete: 2026-07-26
 
@@ -42,6 +42,10 @@ Completed:
   `frontend`.
 - ECR scan on push, immutable image tags, and lifecycle policies applied.
 - Safe root outputs added for ECR repository names, URLs, and ARNs.
+- SQS module created and wired into the dev root.
+- Deployment events SQS queue and DLQ applied.
+- Redrive policy applied from the main deployment queue to the DLQ.
+- Safe root outputs added for deployment queue and DLQ names, URLs, and ARNs.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -51,6 +55,8 @@ Observed identifiers from the latest verified terminal output:
 - RDS identifier: `releaseops-dev-postgres`
 - ECR repositories: `releaseops-dev/api`, `releaseops-dev/worker`,
   `releaseops-dev/notifications`, `releaseops-dev/frontend`
+- SQS queues: `releaseops-dev-deployment-events`,
+  `releaseops-dev-deployment-events-dlq`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -59,7 +65,7 @@ Do not treat these IDs as permanent. Verify live state before using them.
 Not started:
 
 - Terraform state-address refactor exercise
-- IAM, SQS/DLQ
+- IAM
 - EKS and add-ons
 - Java application
 - Docker images
@@ -80,9 +86,8 @@ Resume inside:
 Continue after **Networking Module Phase 2**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Add SQS deployment queue and DLQ.
-3. Add IAM/OIDC preparation for GitHub Actions.
-4. Continue toward EKS modules.
+2. Add IAM/OIDC preparation for GitHub Actions.
+3. Continue toward EKS modules.
 
 The guide must deliver this one small type-along block at a time.
 

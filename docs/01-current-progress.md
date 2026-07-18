@@ -1,6 +1,6 @@
 # Current Progress Notes
 
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 ## What Exists Right Now
 
@@ -28,8 +28,13 @@ We have built the foundation for the ReleaseOps platform:
 - reusable ECR module
 - ECR repositories for `api`, `worker`, `notifications`, and `frontend`
 - ECR lifecycle policies for image cleanup
+- reusable SQS module
+- deployment events SQS queue
+- deployment events DLQ
+- SQS redrive policy from main queue to DLQ
 - outputs for important networking and RDS preparation IDs
 - outputs for ECR repository names, URLs, and ARNs
+- outputs for deployment queue and DLQ names, URLs, and ARNs
 
 ## Current AWS Shape
 
@@ -92,6 +97,7 @@ Useful focused checks:
 terraform state list | grep database
 terraform state list | grep -E "nat|vpc_endpoint|route_table|subnet"
 terraform state list | grep ecr
+terraform state list | grep sqs
 ```
 
 ## What To Watch In Every Plan
@@ -140,11 +146,10 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 Next we should build the next AWS platform-support layer:
 
-- SQS deployment queue and DLQ
 - IAM/OIDC preparation for GitHub Actions
 - additional notes around RDS operational gotchas
 
-Then we move toward IAM, SQS, EKS, and the Java application.
+Then we move toward IAM, EKS, and the Java application.
 
 ## RDS-Ready Networking Completed
 
@@ -229,3 +234,36 @@ ecr_repository_arns
 ```
 
 The URLs are what GitHub Actions will later use for Docker image pushes.
+
+## SQS And DLQ Completed
+
+We created a reusable `sqs` module and wired it into the dev root.
+
+Current queues:
+
+```text
+releaseops-dev-deployment-events
+releaseops-dev-deployment-events-dlq
+```
+
+The main queue will support future async deployment work:
+
+```text
+api service -> deployment-events queue -> worker service
+```
+
+The DLQ will store messages that fail too many processing attempts.
+
+Safe root outputs now include:
+
+```text
+deployment_queue_name
+deployment_queue_url
+deployment_queue_arn
+deployment_dlq_name
+deployment_dlq_url
+deployment_dlq_arn
+```
+
+The queue URL is useful for application configuration. The queue ARN is useful
+for IAM permissions and monitoring.
