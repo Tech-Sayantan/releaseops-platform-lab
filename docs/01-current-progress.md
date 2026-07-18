@@ -18,7 +18,11 @@ We have built the foundation for the ReleaseOps platform:
 - one lab NAT Gateway
 - S3 Gateway VPC Endpoint
 - EKS/Load Balancer subnet discovery tags
-- outputs for important networking IDs
+- RDS DB subnet group
+- database security group
+- application security group
+- PostgreSQL ingress from application security group to database security group
+- outputs for important networking and RDS preparation IDs
 
 ## Current AWS Shape
 
@@ -126,12 +130,33 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 ## Next Planned Work
 
-Next we should build the RDS-ready network/security layer:
+Next we should build the RDS encryption and secrets preparation layer:
 
-- security group for EKS application path
-- security group for RDS PostgreSQL
-- RDS subnet group using database subnet IDs
-- KMS/Secrets Manager design before actual database creation
+- KMS key for database/secrets encryption
+- Secrets Manager secret metadata for PostgreSQL credentials
+- random password generation strategy
+- RDS PostgreSQL instance variables and cost guardrails
 
 Then we move toward IAM, ECR, SQS, RDS, and EKS.
 
+## RDS-Ready Networking Completed
+
+We created an `rds` Terraform module and wired it into the dev root.
+
+Current resources:
+
+```text
+module.rds.aws_db_subnet_group.this
+module.rds.aws_security_group.database
+module.rds.aws_security_group.application
+module.rds.aws_vpc_security_group_ingress_rule.postgres_from_application
+```
+
+Meaning:
+
+- the DB subnet group tells RDS which isolated database subnets it may use
+- the database security group protects the future PostgreSQL database
+- the application security group represents workloads allowed to talk to RDS
+- the ingress rule allows only application SG traffic to DB SG on TCP `5432`
+
+The actual RDS PostgreSQL instance does not exist yet.

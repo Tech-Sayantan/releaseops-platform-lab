@@ -15,3 +15,18 @@ module "networking" {
     ManagedBy   = "terraform"
   }
 }
+
+module "rds" {
+  source = "../../modules/rds"
+
+  name_prefix         = "${var.project_name}-${var.environment}"
+  vpc_id              = module.networking.vpc_id
+  database_subnet_ids = module.networking.database_subnet_ids
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    ManagedBy   = "terraform"
+  }
+}

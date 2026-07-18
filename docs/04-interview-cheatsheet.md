@@ -125,6 +125,45 @@ Answer:
 > controlled paths, but the database does not get general outbound internet
 > access.
 
+## DB Subnet Group
+
+Question:
+
+> What is a DB subnet group in RDS?
+
+Answer:
+
+> A DB subnet group is an RDS-specific object that lists the subnets where AWS is
+> allowed to place database resources. Instead of passing one subnet directly to
+> RDS, I create a DB subnet group with isolated database subnets across at least
+> two Availability Zones, then attach the RDS instance or cluster to that group.
+
+## RDS Security Group Path
+
+Question:
+
+> How does your application connect to RDS securely?
+
+Answer:
+
+> RDS is placed in isolated database subnets and protected by a database security
+> group. The database security group allows PostgreSQL on TCP `5432` only from
+> the application security group, not from the whole VPC CIDR. Later, EKS
+> workloads receive the application network identity through the node or pod
+> security design, and Kubernetes NetworkPolicy adds pod-level control.
+
+## Security Group Source
+
+Question:
+
+> Why use a security group as the source instead of `10.40.0.0/16`?
+
+Answer:
+
+> A CIDR rule allows anything with an IP in that range to attempt access. A
+> security-group-to-security-group rule is tighter because AWS allows traffic
+> only from resources associated with the approved source security group.
+
 ## EKS Subnet Tags
 
 Question:
@@ -174,4 +213,3 @@ Answer:
 > production I would evaluate NAT per AZ, Multi-AZ RDS, backups, deletion
 > protection, RDS Proxy, stricter secrets rotation, and environment/account
 > separation.
-

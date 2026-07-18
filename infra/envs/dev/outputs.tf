@@ -30,3 +30,16 @@ output "s3_vpc_endpoint_id" {
   description = "ID of the S3 Gateway VPC Endpoint."
   value       = module.networking.s3_vpc_endpoint_id
 }
+output "db_subnet_group_name" {
+  description = "Name of the RDS DB subnet group."
+  value       = module.rds.db_subnet_group_name
+}
+
+output "database_security_group_id" {
+  description = "ID of the RDS database security group."
+  value       = module.rds.database_security_group_id
+}
+output "application_security_group_id" {
+  description = "ID of the application security group allowed to reach PostgreSQL."
+  value       = module.rds.application_security_group_id
+}

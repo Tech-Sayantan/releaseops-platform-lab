@@ -28,7 +28,12 @@ Completed:
 - S3 Gateway VPC Endpoint attached to the private application route table.
 - EKS and AWS Load Balancer Controller discovery tags on public/private
   application subnets.
-- Terraform outputs for VPC, subnet, NAT Gateway, and S3 endpoint IDs.
+- RDS DB subnet group using the isolated database subnets.
+- Database security group and application security group.
+- PostgreSQL ingress from the application security group to the database
+  security group.
+- Terraform outputs for VPC, subnet, NAT Gateway, S3 endpoint, DB subnet group,
+  and security group IDs.
 
 Not started yet:
 
@@ -52,12 +57,16 @@ Not started yet:
 │   ├── 01-current-progress.md
 │   ├── 02-terraform-backend-notes.md
 │   ├── 03-networking-deep-dive.md
-│   └── 04-interview-cheatsheet.md
+│   ├── 04-interview-cheatsheet.md
+│   └── 05-rds-networking-notes.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
-│   └── modules/networking/
-│       └── Reusable networking module
+│   └── modules/
+│       ├── networking/
+│       │   └── Reusable networking module
+│       └── rds/
+│           └── RDS networking and security preparation module
 ├── PROJECT_MASTER_PLAN.md
 ├── PROJECT_STATUS.md
 └── AGENTS.md
@@ -92,4 +101,4 @@ Start with:
 - [Terraform Backend Notes](docs/02-terraform-backend-notes.md)
 - [Networking Deep Dive](docs/03-networking-deep-dive.md)
 - [Interview Cheatsheet](docs/04-interview-cheatsheet.md)
-
+- [RDS Networking Notes](docs/05-rds-networking-notes.md)

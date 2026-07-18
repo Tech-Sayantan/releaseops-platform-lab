@@ -25,6 +25,12 @@ Completed:
 - EKS and AWS Load Balancer Controller discovery tags applied to public and
   private application subnets.
 - NAT and S3 endpoint outputs added.
+- RDS module created and wired into the dev root.
+- RDS DB subnet group applied using isolated database subnets.
+- Database security group and application security group applied.
+- PostgreSQL ingress rule applied from application security group to database
+  security group on TCP `5432`.
+- Root outputs added for DB subnet group and RDS/application security groups.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -62,12 +68,9 @@ Resume inside:
 Continue after **Networking Module Phase 2**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Add RDS-ready network/security pieces:
-   - application security group path
-   - database security group path
-   - RDS subnet group using database subnet IDs
-3. Add KMS and Secrets Manager design before creating the database.
-4. Continue to IAM, ECR, SQS/DLQ, RDS, and EKS modules.
+2. Add KMS and Secrets Manager design before creating the database.
+3. Add cost-controlled RDS PostgreSQL variables and resources.
+4. Continue to IAM, ECR, SQS/DLQ, and EKS modules.
 
 The guide must deliver this one small type-along block at a time.
 
