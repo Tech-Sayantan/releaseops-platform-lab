@@ -1,0 +1,30 @@
+# Terraform local data
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform plans can contain sensitive values.
+*.tfplan
+tfplan
+plan.out
+
+# Local variable files can contain secrets in real projects.
+*.auto.tfvars
+*.auto.tfvars.json
+*.tfvars.json
+
+# Keep this lab's dev tfvars committed because it contains only non-secret
+# learning values. Do not copy this exception blindly into secret-bearing repos.
+!infra/envs/dev/terraform.tfvars
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
+
