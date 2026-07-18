@@ -24,6 +24,54 @@ module.sqs.aws_sqs_queue.dlq
 The main queue is for normal deployment-event messages. The DLQ is where failed
 messages go after repeated processing failures.
 
+## Sleepy Revision Path
+
+If you are reading this before an interview and your brain is tired, read in
+this order:
+
+1. Read `What SQS Is`.
+2. Read `What DLQ Is`.
+3. Read `Visibility Timeout`.
+4. Read `At-Least-Once Delivery`.
+5. Read `Terraform Walkthrough`.
+6. Read `Common Production Issues`.
+7. Read `Interview Questions To Practice`.
+
+Do not try to memorize every Terraform line first. First understand the story:
+
+```text
+API should not do slow work directly.
+API sends a message to SQS.
+Worker reads the message later.
+If worker fails repeatedly, message goes to DLQ.
+Engineer investigates DLQ.
+```
+
+That is the heart of this topic.
+
+## One-Minute Mental Model
+
+Imagine a restaurant.
+
+The customer gives an order to the cashier. The cashier does not cook the food.
+The cashier writes the order and passes it to the kitchen. The kitchen prepares
+the food in the background.
+
+In our system:
+
+```text
+customer      = user
+cashier       = api service
+order slip    = SQS message
+kitchen queue = SQS queue
+cook          = worker service
+bad order box = DLQ
+```
+
+If the order slip is unreadable or impossible to process, it should not block
+all other orders. It goes into a separate place for investigation. That separate
+place is the DLQ.
+
 ## What SQS Is
 
 SQS means Simple Queue Service.
@@ -44,6 +92,26 @@ worker service performs background deployment work
 
 This keeps the API fast. The API should not hold the user's HTTP request open
 while slow background work happens.
+
+The key DevOps idea is called **decoupling**.
+
+Without SQS:
+
+```text
+api service directly depends on worker-speed work
+if deployment work is slow, API becomes slow
+if deployment work fails, user request may fail
+```
+
+With SQS:
+
+```text
+api service only needs to save the request and send a message
+worker service can process the work independently
+temporary worker failure does not immediately break the API
+```
+
+This is one reason queues are common in production systems.
 
 Bad design:
 
@@ -81,6 +149,21 @@ Future example:
 
 The queue does not understand the business meaning of the message. It only
 stores and delivers it. The application code decides what the message means.
+
+Important: SQS is not a database.
+
+SQS is for passing work from one component to another. The real source of truth
+should still be in a database or another durable system.
+
+For our future app:
+
+```text
+PostgreSQL stores deployment request details.
+SQS carries a small event saying "process deployment dep-123".
+```
+
+That design is safer than putting the entire business state only inside the
+queue message.
 
 ## What DLQ Is
 
@@ -131,6 +214,45 @@ should normally be empty
 ```
 
 If the DLQ has messages, it usually means something needs attention.
+
+## Standard Queue Vs FIFO Queue
+
+AWS SQS has two major queue types:
+
+- Standard queue
+- FIFO queue
+
+We are using the default standard queue.
+
+Standard queue:
+
+```text
+very high throughput
+at-least-once delivery
+best-effort ordering
+duplicates are possible
+```
+
+FIFO queue:
+
+```text
+first-in-first-out ordering
+deduplication support
+lower throughput than standard queue
+queue name must end with .fifo
+```
+
+Why standard queue is okay for our lab:
+
+Our future worker should process deployment messages using a unique
+`deploymentId`. If a message is delivered twice, the worker can check whether
+that deployment was already processed. That makes standard queue acceptable.
+
+Interview line:
+
+> I choose standard SQS when high throughput and loose ordering are acceptable,
+> and I handle duplicate messages with idempotency. I choose FIFO when strict
+> ordering or deduplication is a hard requirement.
 
 ## Visibility Timeout
 
@@ -337,6 +459,395 @@ if not processed, continue
 
 For our future worker service, we should design around a unique
 `deploymentId`.
+
+## Terraform Walkthrough
+
+This section explains every important Terraform piece we wrote.
+
+### Module Variables
+
+File:
+
+```text
+infra/modules/sqs/variables.tf
+```
+
+### `name_prefix`
+
+```hcl
+variable "name_prefix" {
+  description = "Name prefix used for SQS resources."
+  type        = string
+}
+```
+
+This gives every queue a consistent project/environment prefix.
+
+For us:
+
+```text
+project_name = releaseops
+environment  = dev
+name_prefix  = releaseops-dev
+```
+
+Production reason:
+
+In a real AWS account, there may be hundreds or thousands of resources. Names
+like `queue1` or `test` are useless. Names like
+`releaseops-dev-deployment-events` tell you what the resource belongs to.
+
+### `queue_name`
+
+```hcl
+variable "queue_name" {
+  description = "Logical name of the main SQS queue."
+  type        = string
+}
+```
+
+This is the business name of the queue.
+
+For us:
+
+```text
+deployment-events
+```
+
+The final queue name becomes:
+
+```text
+releaseops-dev-deployment-events
+```
+
+We keep this as a variable because the module should be reusable. The same
+module could later create:
+
+```text
+releaseops-dev-email-events
+releaseops-dev-audit-events
+releaseops-dev-report-jobs
+```
+
+### `visibility_timeout_seconds`
+
+```hcl
+variable "visibility_timeout_seconds" {
+  description = "How long a message stays invisible after a worker receives it."
+  type        = number
+  default     = 60
+}
+```
+
+This is the worker processing window.
+
+If the worker receives a message, SQS hides that message for 60 seconds. During
+those 60 seconds, another worker should not receive the same message.
+
+If the worker finishes successfully, it deletes the message.
+
+If the worker crashes, the message becomes visible again after 60 seconds.
+
+### `message_retention_seconds`
+
+```hcl
+variable "message_retention_seconds" {
+  description = "How long SQS keeps messages if they are not deleted."
+  type        = number
+  default     = 345600
+}
+```
+
+`345600` seconds means 4 days.
+
+This means unprocessed messages can wait in the queue for up to 4 days.
+
+Why useful:
+
+If the worker is down for a short period, messages wait instead of disappearing.
+
+Why dangerous if misunderstood:
+
+SQS is not long-term storage. After the retention window, old messages are
+deleted.
+
+### `max_receive_count`
+
+```hcl
+variable "max_receive_count" {
+  description = "How many times a message can fail before moving to the DLQ."
+  type        = number
+  default     = 5
+}
+```
+
+This controls DLQ movement.
+
+If the same message is received 5 times and still not processed successfully,
+SQS moves it to the DLQ.
+
+This protects the worker from retrying a broken message forever.
+
+### `tags`
+
+```hcl
+variable "tags" {
+  description = "Common tags to apply to SQS resources."
+  type        = map(string)
+  default     = {}
+}
+```
+
+Tags are metadata.
+
+For us:
+
+```text
+Project     = releaseops
+Environment = dev
+Owner       = tan
+ManagedBy   = terraform
+```
+
+Real teams use tags for:
+
+- cost tracking
+- ownership
+- cleanup
+- security reporting
+- automation
+
+### Validation Blocks
+
+Example:
+
+```hcl
+validation {
+  condition     = var.max_receive_count >= 1 && var.max_receive_count <= 1000
+  error_message = "max_receive_count must be between 1 and 1000."
+}
+```
+
+Validation blocks make Terraform fail early with a clear message.
+
+Without validation, bad input may fail later with a confusing AWS API error.
+
+Interview line:
+
+> I like adding validation to module inputs because it catches bad values during
+> plan time and makes the module safer for other engineers.
+
+### DLQ Resource
+
+File:
+
+```text
+infra/modules/sqs/main.tf
+```
+
+```hcl
+resource "aws_sqs_queue" "dlq" {
+  name = "${var.name_prefix}-${var.queue_name}-dlq"
+
+  message_retention_seconds = var.message_retention_seconds
+
+  tags = merge(var.tags, {
+    Name      = "${var.name_prefix}-${var.queue_name}-dlq"
+    Component = "sqs"
+    QueueType = "dead-letter"
+  })
+}
+```
+
+This creates the dead-letter queue.
+
+Important fields:
+
+`name`:
+
+```text
+releaseops-dev-deployment-events-dlq
+```
+
+`message_retention_seconds`:
+
+how long failed messages stay available for inspection.
+
+`tags`:
+
+common tags plus `Component=sqs` and `QueueType=dead-letter`.
+
+### Main Queue Resource
+
+```hcl
+resource "aws_sqs_queue" "main" {
+  name = "${var.name_prefix}-${var.queue_name}"
+
+  visibility_timeout_seconds = var.visibility_timeout_seconds
+  message_retention_seconds  = var.message_retention_seconds
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dlq.arn
+    maxReceiveCount     = var.max_receive_count
+  })
+
+  tags = merge(var.tags, {
+    Name      = "${var.name_prefix}-${var.queue_name}"
+    Component = "sqs"
+    QueueType = "main"
+  })
+}
+```
+
+This creates the main queue.
+
+Important fields:
+
+`name`:
+
+```text
+releaseops-dev-deployment-events
+```
+
+`visibility_timeout_seconds`:
+
+how long the message is hidden after worker receives it.
+
+`message_retention_seconds`:
+
+how long SQS keeps unprocessed messages.
+
+`redrive_policy`:
+
+connects main queue to DLQ.
+
+`tags`:
+
+common tags plus `Component=sqs` and `QueueType=main`.
+
+### Terraform Dependency
+
+The main queue uses:
+
+```hcl
+aws_sqs_queue.dlq.arn
+```
+
+Because of this reference, Terraform automatically understands:
+
+```text
+create DLQ first
+then create main queue
+```
+
+We do not need `depends_on`.
+
+Interview line:
+
+> In Terraform, direct references usually create the dependency graph
+> automatically. I avoid `depends_on` unless Terraform cannot infer the
+> dependency from expressions.
+
+### Root Module Wiring
+
+File:
+
+```text
+infra/envs/dev/main.tf
+```
+
+```hcl
+module "sqs" {
+  source = "../../modules/sqs"
+
+  name_prefix = "${var.project_name}-${var.environment}"
+  queue_name  = var.deployment_queue_name
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    ManagedBy   = "terraform"
+  }
+}
+```
+
+This is where the generic module becomes a real dev environment resource.
+
+The module does not know about `project_name` or `environment`. The root module
+passes the final values into it.
+
+The data flow is:
+
+```text
+terraform.tfvars
+  -> root variable deployment_queue_name
+  -> module "sqs"
+  -> var.queue_name inside SQS module
+  -> aws_sqs_queue resources
+```
+
+## Terraform Plan We Expected
+
+When we ran plan from:
+
+```text
+infra/envs/dev
+```
+
+we expected:
+
+```text
+Plan: 2 to add, 0 to change, 0 to destroy.
+```
+
+Why 2?
+
+```text
+1 main queue
+1 DLQ
+```
+
+If Terraform had shown a VPC, subnet, RDS, or ECR replacement, that would have
+been a red flag.
+
+Interview line:
+
+> I do not only check the summary count. I also inspect what resources are
+> being changed, especially any destroy or replacement action.
+
+## Mistake We Hit: Running Plan Inside The Module
+
+At one point, `terraform plan` was run from:
+
+```text
+infra/modules/sqs
+```
+
+Terraform then asked for:
+
+```text
+var.name_prefix
+```
+
+That happened because a reusable module folder does not have the environment
+values.
+
+Correct path:
+
+```text
+infra/envs/dev
+```
+
+Rule:
+
+```text
+modules folder = reusable building blocks
+envs/dev folder = actual deployable root module
+```
+
+This is a very common beginner Terraform confusion and a very useful interview
+lesson.
 
 ## Queue URL Vs Queue ARN
 

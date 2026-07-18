@@ -60,6 +60,7 @@ Not started yet:
 ├── bootstrap/
 │   └── Terraform used once to create the remote state backend
 ├── docs/
+│   ├── 00-how-to-use-these-notes.md
 │   ├── 01-current-progress.md
 │   ├── 02-terraform-backend-notes.md
 │   ├── 03-networking-deep-dive.md
@@ -110,6 +111,7 @@ lab moving and tear down by the target date in `PROJECT_MASTER_PLAN.md`.
 
 Start with:
 
+- [How To Use These Notes](docs/00-how-to-use-these-notes.md)
 - [Current Progress](docs/01-current-progress.md)
 - [Terraform Backend Notes](docs/02-terraform-backend-notes.md)
 - [Networking Deep Dive](docs/03-networking-deep-dive.md)
