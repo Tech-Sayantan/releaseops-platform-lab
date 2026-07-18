@@ -60,7 +60,8 @@ Not started yet:
 │   ├── 02-terraform-backend-notes.md
 │   ├── 03-networking-deep-dive.md
 │   ├── 04-interview-cheatsheet.md
-│   └── 05-rds-networking-notes.md
+│   ├── 05-rds-networking-notes.md
+│   └── 06-real-world-devops-tickets.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -104,3 +105,4 @@ Start with:
 - [Networking Deep Dive](docs/03-networking-deep-dive.md)
 - [Interview Cheatsheet](docs/04-interview-cheatsheet.md)
 - [RDS Networking Notes](docs/05-rds-networking-notes.md)
+- [Real-World DevOps Tickets](docs/06-real-world-devops-tickets.md)
