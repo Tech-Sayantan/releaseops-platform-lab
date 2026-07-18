@@ -31,12 +31,19 @@ Completed:
 - PostgreSQL ingress rule applied from application security group to database
   security group on TCP `5432`.
 - Root outputs added for DB subnet group and RDS/application security groups.
+- KMS key and alias applied for database-related encryption.
+- Secrets Manager secret and secret version applied for PostgreSQL credentials.
+- Random PostgreSQL password generated and stored in Secrets Manager.
+- Private encrypted PostgreSQL RDS instance applied.
+- Safe root outputs added for database endpoint, port, name, secret ARN, and
+  KMS key ARN.
 
 Observed identifiers from the latest verified terminal output:
 
 - VPC: `vpc-047a19a79c5090ded`
 - NAT Gateway: `nat-07705be2ac693339d`
 - S3 Gateway VPC Endpoint: `vpce-06175a13cdaf34560`
+- RDS identifier: `releaseops-dev-postgres`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -44,10 +51,8 @@ Do not treat these IDs as permanent. Verify live state before using them.
 
 Not started:
 
-- database subnets and NAT/S3 endpoint refinement
 - Terraform state-address refactor exercise
-- IAM, KMS, ECR, SQS/DLQ, Secrets Manager
-- RDS
+- IAM, ECR, SQS/DLQ
 - EKS and add-ons
 - Java application
 - Docker images
@@ -68,9 +73,10 @@ Resume inside:
 Continue after **Networking Module Phase 2**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Add KMS and Secrets Manager design before creating the database.
-3. Add cost-controlled RDS PostgreSQL variables and resources.
-4. Continue to IAM, ECR, SQS/DLQ, and EKS modules.
+2. Add ECR repositories for the four Java services.
+3. Add SQS deployment queue and DLQ.
+4. Add IAM/OIDC preparation for GitHub Actions.
+5. Continue toward EKS modules.
 
 The guide must deliver this one small type-along block at a time.
 
@@ -95,9 +101,9 @@ Do not run `apply` until the plan has been reviewed.
 
 ## Current Cost Posture
 
-At this status point, EKS, RDS, ALB, and worker nodes should not exist yet.
-NAT Gateway does exist and has hourly cost. Verify live state before relying on
-this status.
+At this status point, EKS, ALB, and worker nodes should not exist yet. NAT
+Gateway, KMS, Secrets Manager, and RDS PostgreSQL do exist and have cost.
+Verify live state before relying on this status.
 
 The expensive-resource window starts no earlier than July 23 unless Tan reaches
 the apply milestone sooner and is ready to continue without idle days.

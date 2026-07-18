@@ -10,14 +10,19 @@ We added a dedicated Terraform module:
 infra/modules/rds
 ```
 
-This module currently creates RDS preparation resources only:
+This module currently creates RDS networking, security, encryption, secrets, and
+database resources:
 
 - DB subnet group
 - database security group
 - application security group
 - PostgreSQL ingress rule from application SG to database SG
+- KMS key and alias
+- Secrets Manager secret and secret version
+- generated PostgreSQL master password
+- private encrypted PostgreSQL RDS instance
 
-It does not create the actual PostgreSQL database yet.
+The actual PostgreSQL database now exists.
 
 ## DB Subnet Group
 
@@ -145,3 +150,79 @@ If the app cannot connect to RDS later, check:
 - credentials and database/user/schema existence
 - PostgreSQL connection pool limits
 
+## KMS And Secrets Manager
+
+KMS manages encryption keys. Secrets Manager stores secret values.
+
+In this lab:
+
+```text
+KMS key
+  -> encrypts database-related secret data
+  -> encrypts RDS storage
+
+Secrets Manager secret
+  -> stores username/password/database JSON
+```
+
+The secret contains a JSON document shaped like:
+
+```json
+{
+  "username": "releaseops_admin",
+  "password": "<generated>",
+  "database": "releaseops"
+}
+```
+
+The password is not exposed as a Terraform output.
+
+Important Terraform state warning:
+
+```text
+random_password.database_master.result
+```
+
+is stored in Terraform state because Terraform generated it. The output hides
+the value, but state still contains it. This is why remote state must be
+encrypted, access-controlled, and treated as sensitive.
+
+## RDS Instance
+
+The lab RDS instance is:
+
+```text
+module.rds.aws_db_instance.postgres
+```
+
+It is configured as:
+
+- PostgreSQL
+- private endpoint
+- encrypted storage
+- database subnet group in isolated DB subnets
+- database security group attached
+- Single-AZ for lab cost control
+- short backup retention
+- deletion protection disabled for teardown
+- final snapshot skipped for teardown speed
+
+Safe connection metadata is exposed through Terraform outputs:
+
+```text
+database_endpoint
+database_port
+database_name
+```
+
+The password is intentionally not exposed.
+
+Production comparison:
+
+- enable Multi-AZ
+- enable deletion protection
+- keep a final snapshot on destroy
+- longer backup retention/PITR
+- consider RDS Proxy for connection pooling
+- monitor CPU, memory, storage, connections, and latency
+- use stricter secret rotation and access policies

@@ -29,16 +29,18 @@ Completed:
 - EKS and AWS Load Balancer Controller discovery tags on public/private
   application subnets.
 - RDS DB subnet group using the isolated database subnets.
+- KMS key and alias for database-related encryption.
+- Secrets Manager secret and secret version for PostgreSQL credentials.
+- Private encrypted PostgreSQL RDS instance.
 - Database security group and application security group.
 - PostgreSQL ingress from the application security group to the database
   security group.
 - Terraform outputs for VPC, subnet, NAT Gateway, S3 endpoint, DB subnet group,
-  and security group IDs.
+  security group IDs, secret/KMS ARNs, and safe RDS connection metadata.
 
 Not started yet:
 
-- IAM, KMS, ECR, SQS/DLQ, Secrets Manager
-- RDS PostgreSQL
+- IAM, ECR, SQS/DLQ
 - EKS and add-ons
 - Java services
 - Docker images
@@ -89,9 +91,9 @@ RDS, or EKS resources.
 
 ## Cost Warning
 
-The lab currently has a NAT Gateway. NAT Gateway has hourly and data-processing
-cost. Keep the lab moving and tear down by the target date in
-`PROJECT_MASTER_PLAN.md`.
+The lab currently has a NAT Gateway, customer-managed KMS key, Secrets Manager
+secret, and RDS PostgreSQL instance. These are real paid AWS resources. Keep the
+lab moving and tear down by the target date in `PROJECT_MASTER_PLAN.md`.
 
 ## Learning Notes
 

@@ -43,3 +43,26 @@ output "application_security_group_id" {
   description = "ID of the application security group allowed to reach PostgreSQL."
   value       = module.rds.application_security_group_id
 }
+output "database_kms_key_arn" {
+  description = "ARN of the KMS key used for database-related encryption."
+  value       = module.rds.database_kms_key_arn
+}
+
+output "database_secret_arn" {
+  description = "ARN of the Secrets Manager secret for database credentials."
+  value       = module.rds.database_secret_arn
+}
+output "database_endpoint" {
+  description = "Endpoint address of the PostgreSQL RDS instance."
+  value       = module.rds.database_endpoint
+}
+
+output "database_port" {
+  description = "Port of the PostgreSQL RDS instance."
+  value       = module.rds.database_port
+}
+
+output "database_name" {
+  description = "Initial database name created in PostgreSQL."
+  value       = module.rds.database_name
+}

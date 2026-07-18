@@ -152,6 +152,46 @@ Answer:
 > workloads receive the application network identity through the node or pod
 > security design, and Kubernetes NetworkPolicy adds pod-level control.
 
+## KMS vs Secrets Manager
+
+Question:
+
+> What is the difference between KMS and Secrets Manager?
+
+Answer:
+
+> KMS manages encryption keys. Secrets Manager stores sensitive values like
+> database credentials. In this lab, the KMS key encrypts database-related data
+> and the Secrets Manager secret stores the PostgreSQL credential JSON. KMS is
+> the lock/key system; Secrets Manager is the protected locker.
+
+## Terraform And Secret State
+
+Question:
+
+> Is it safe for Terraform to generate a database password?
+
+Answer:
+
+> It can be acceptable for a controlled lab, but the generated password is stored
+> in Terraform state even if it is marked sensitive and not printed in outputs.
+> For stricter production setups, I would evaluate secret injection outside
+> Terraform, managed rotation, or another approved credential workflow.
+
+## RDS Lab Settings
+
+Question:
+
+> Which RDS settings did you choose for the lab, and how would production differ?
+
+Answer:
+
+> The lab uses a small private encrypted PostgreSQL instance, Single-AZ,
+> short backup retention, no deletion protection, and skipped final snapshot for
+> easy teardown. In production I would usually consider Multi-AZ, deletion
+> protection, final snapshots, longer backup retention/PITR, stricter rotation,
+> performance monitoring, and possibly RDS Proxy.
+
 ## Security Group Source
 
 Question:
