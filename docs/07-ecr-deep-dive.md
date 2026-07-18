@@ -2,6 +2,28 @@
 
 Last updated: 2026-07-18
 
+## Sleepy Revision Path
+
+If you are revising quickly, read these sections first:
+
+1. `What ECR Is`
+2. `One-Minute Mental Model`
+3. `Why One Repository Per Service`
+4. `Why We Used for_each`
+5. `What Tag Immutability Means`
+6. `What Scan On Push Means`
+7. `Common ECR Production Issues`
+
+Core story:
+
+```text
+Code becomes a Docker image.
+That image needs a private registry.
+ECR is that registry in AWS.
+CI pushes images there.
+EKS later pulls images from there.
+```
+
 ## What We Built
 
 We created a reusable Terraform module for Amazon ECR and called it from the
@@ -38,58 +60,70 @@ module.ecr.aws_ecr_lifecycle_policy.this["notifications"]
 module.ecr.aws_ecr_lifecycle_policy.this["frontend"]
 ```
 
+## One-Minute Mental Model
+
+Think of ECR as a private warehouse for container images.
+
+```text
+source code = recipe
+docker build = making the packaged product
+container image = packaged product
+ECR = private warehouse
+EKS = place where the product is used
+```
+
+Flow:
+
+```text
+developer pushes code
+CI builds Docker image
+CI pushes image to ECR
+Kubernetes pulls image from ECR
+pods start from that image
+```
+
 ## What ECR Is
 
 ECR means Elastic Container Registry.
 
-It is AWS's managed private container image registry. In simple words, it is
-where our Docker images will live before EKS pulls them.
+It is AWS's managed private container image registry.
 
-The future release flow will look like this:
+In simple words:
 
 ```text
-Developer pushes code
-GitHub Actions builds Docker image
-GitHub Actions pushes image to ECR
-EKS pulls image from ECR
-Argo CD deploys the Kubernetes workload
+it is where our Docker images live before the cluster pulls them
 ```
 
-Without ECR, we would have nowhere private and AWS-native to store the images
-that our Kubernetes cluster needs to run.
+Without ECR, we would have nowhere AWS-native and private to store the images
+our workloads need.
 
 ## Why One Repository Per Service
 
-We created separate repositories for each service:
+We created separate repositories for:
 
 - `api`
 - `worker`
 - `notifications`
 - `frontend`
 
-This is a realistic production pattern because each service has a separate
-image history and release lifecycle.
+Why this is better than one giant shared repository:
 
-If every service used one shared repository, image management would become
-messy. It would be harder to see which image belongs to which service, harder
-to apply lifecycle rules cleanly, and harder to scope future permissions.
-
-Interview line:
-
-> I usually prefer one ECR repository per deployable service because it keeps
-> image history, lifecycle policy, scanning, and access control cleaner.
+- each service has its own image history
+- lifecycle policies stay cleaner
+- future permissions can be scoped better
+- operational debugging is easier
 
 ## Why We Used `for_each`
 
-The ECR module uses:
+The module uses:
 
 ```hcl
 for_each = local.repositories
 ```
 
-This creates one resource per repository name.
+This creates one repository per service name.
 
-With input:
+Input:
 
 ```hcl
 ecr_repository_names = [
@@ -100,7 +134,7 @@ ecr_repository_names = [
 ]
 ```
 
-Terraform creates stable addresses:
+Terraform addresses:
 
 ```text
 aws_ecr_repository.this["api"]
@@ -109,22 +143,11 @@ aws_ecr_repository.this["notifications"]
 aws_ecr_repository.this["frontend"]
 ```
 
-This is better than `count` for named resources.
+Why `for_each` is better than `count` here:
 
-With `count`, Terraform addresses resources by number:
-
-```text
-aws_ecr_repository.this[0]
-aws_ecr_repository.this[1]
-```
-
-That can become risky if you reorder the list. With `for_each`, the resource
-identity is tied to the service name, not its position in the list.
-
-Interview gotcha:
-
-> For stable named infrastructure like repositories, queues, IAM users, or
-> service-specific resources, `for_each` is usually safer than `count`.
+- repository identity is based on service name
+- list order changes are less risky
+- resource addresses are easier to understand
 
 ## What Tag Immutability Means
 
@@ -142,32 +165,18 @@ Example:
 releaseops-dev/api:v1.0.0
 ```
 
-If this tag already exists, nobody can push a different image with the same
-tag.
+If that tag already exists, a different image cannot silently replace it.
 
-This matters because mutable image tags can create confusing production
-incidents.
+Why that matters:
 
-Bad situation:
+Bad scenario:
 
 ```text
-Monday: api:v1.0.0 points to image A
-Tuesday: api:v1.0.0 gets overwritten and points to image B
+Monday: v1.0.0 points to image A
+Tuesday: v1.0.0 is overwritten and now points to image B
 ```
 
-Now rollback, debugging, and audit become painful because the same tag no
-longer means the same artifact.
-
-Good pattern:
-
-- use immutable version tags such as `v1.2.3`
-- use Git SHA tags such as `sha-a1b2c3d`
-- avoid relying only on `latest`
-
-Interview line:
-
-> I prefer immutable image tags because a deployed tag should always point to
-> the same image digest. It makes rollback and incident debugging safer.
+Now rollback and audit become confusing.
 
 ## What Scan On Push Means
 
@@ -177,28 +186,26 @@ We enabled:
 scan_on_push = true
 ```
 
-This asks ECR to scan images when they are pushed.
+This asks ECR to scan images for known vulnerabilities when they are pushed.
 
-The goal is to detect known vulnerabilities in container images. For example,
-if a base image contains a vulnerable OpenSSL or Linux package, the scan can
-surface that.
+Important nuance:
 
-Production gotcha:
+```text
+scan on push does not automatically fix vulnerabilities
+```
 
-Scanning does not automatically make images safe. It only reports findings.
-Teams still need a policy for what happens when critical vulnerabilities are
-found.
+It only reports findings. Teams still need policy and action.
 
-Example production rules:
+Typical production follow-up:
 
-- block deployment if critical vulnerabilities exist
-- allow dev deployments but block prod
-- require base image rebuild
-- create security tickets automatically
+- block prod deployment for critical findings
+- allow dev but create a security ticket
+- rebuild base images
+- review the vulnerable package chain
 
 ## Why Lifecycle Policies Matter
 
-Every CI run can push a new image.
+Every CI run can create another image.
 
 Example:
 
@@ -209,23 +216,25 @@ api:sha-3333333
 api:sha-4444444
 ```
 
-If old images are never deleted, ECR storage grows forever.
+If old images are never cleaned up:
 
-Our lifecycle policy does two things:
+- storage grows
+- repositories get messy
+- rollback hygiene becomes poor
 
-- expires untagged images after a few days
-- keeps only a limited number of tagged images for known tag prefixes
+Our lifecycle policy does two important things:
 
-This is a cost and hygiene control.
+- expire old untagged images
+- keep only a limited number of tagged images
 
-Interview line:
+This is both:
 
-> I add ECR lifecycle policies early because image storage can quietly grow
-> over time, especially in active CI/CD systems.
+- a cost control
+- an operational hygiene control
 
-## What The Root Outputs Give Us
+## Root Outputs And Why They Matter
 
-The dev root now exposes:
+The dev root exposes:
 
 ```text
 ecr_repository_names
@@ -233,113 +242,147 @@ ecr_repository_urls
 ecr_repository_arns
 ```
 
-The most important one for CI is:
+Most important for CI:
 
 ```text
 ecr_repository_urls
 ```
 
-GitHub Actions will later use these URLs as Docker push destinations.
-
-Example future push target:
+Future example:
 
 ```text
 923988301700.dkr.ecr.us-east-1.amazonaws.com/releaseops-dev/api:sha-a1b2c3d
 ```
 
+Why output both URL and ARN?
+
+- URL is useful for pushing images
+- ARN is useful for IAM policy scoping
+
+## Terraform Walkthrough
+
+Important module inputs:
+
+- `name_prefix`
+- `repository_names`
+- `image_tag_mutability`
+- `max_tagged_images`
+- `untagged_image_expire_days`
+- `force_delete`
+- `tags`
+
+Meaning:
+
+`name_prefix`
+
+Builds names like `releaseops-dev/api`.
+
+`repository_names`
+
+The service list that becomes one repository each.
+
+`image_tag_mutability`
+
+Controls whether tags may be overwritten.
+
+`max_tagged_images`
+
+How many tagged images we keep.
+
+`untagged_image_expire_days`
+
+How fast untagged images are cleaned up.
+
+`force_delete`
+
+Allows easier teardown in this lab even if images still exist.
+
 ## Common ECR Production Issues
 
 ### Image Push Fails
 
-Common causes:
+Possible causes:
 
-- GitHub Actions role does not have ECR permissions
-- Docker login to ECR was not performed
-- repository name is wrong
-- image tag already exists and tag immutability blocks overwrite
+- CI role lacks ECR permission
+- Docker login to ECR missing
+- repository URL is wrong
+- immutable tag already exists
 
-Fix path:
+Debug path:
 
-1. Check the CI role permissions.
-2. Check `aws ecr get-login-password`.
-3. Check the repository URL.
+1. Check CI role permissions.
+2. Check login/auth step.
+3. Check repository URL.
 4. Check whether the tag already exists.
 
-### Pod Cannot Pull Image From ECR
+### Pod Cannot Pull Image
 
-Common causes:
+Possible causes:
 
-- EKS node role lacks ECR read permission
-- private subnet cannot reach ECR API
-- NAT Gateway or VPC endpoints are missing
+- node or pod role lacks ECR read permission
+- private subnet cannot reach required AWS endpoints
 - image tag does not exist
-- Kubernetes image name is wrong
+- image reference in Kubernetes is wrong
 
-Fix path:
+Debug path:
 
-1. Check pod events with `kubectl describe pod`.
-2. Look for `ImagePullBackOff` or `ErrImagePull`.
-3. Verify the image exists in ECR.
-4. Verify node or pod IAM permissions.
-5. Verify private networking path to ECR.
+1. `kubectl describe pod`
+2. check for `ErrImagePull` or `ImagePullBackOff`
+3. verify image exists in ECR
+4. verify IAM
+5. verify network path
 
-### Old Images Increase Cost
+### Image Storage Cost Grows
 
-Common causes:
+Possible causes:
 
 - no lifecycle policy
 - too many SHA images retained
-- old branch images never cleaned up
+- untagged images never cleaned up
 
 Fix path:
 
-1. Add lifecycle policy.
-2. Keep enough images for rollback.
-3. Delete untagged images quickly.
-4. Align image retention with release policy.
+1. add lifecycle rules
+2. align retention with rollback needs
+3. remove stale image buildup
 
 ## Interview Questions To Practice
 
-### Why not use DockerHub?
+### What is ECR?
 
-DockerHub can work for public images, but ECR is better for private AWS
-workloads because it integrates with IAM, EKS, CloudTrail, and AWS networking.
+AWS's managed private container image registry.
+
+### Why not only use DockerHub?
+
+Because ECR integrates more naturally with IAM, EKS, CloudTrail, and AWS
+networking for private workloads.
 
 ### Why immutable tags?
 
-Immutable tags prevent accidental overwrites and make deployments traceable.
-They help with rollback and audit.
-
-### What is the difference between image tag and image digest?
-
-An image tag is a human-friendly label.
-
-Example:
-
-```text
-api:v1.2.0
-```
-
-An image digest is the content identity of the image.
-
-Example:
-
-```text
-sha256:...
-```
-
-The digest is more exact. In production, some teams deploy by digest for the
-strongest reproducibility.
+To prevent silent overwrites and make deployments traceable and rollback-safe.
 
 ### Why lifecycle policy?
 
-To control storage cost and keep repositories clean while still retaining
-enough images for rollback.
+To control storage growth and keep repositories clean without losing the most
+important recent images.
 
 ### Why `for_each` instead of `count`?
 
-Because the repositories are named resources. `for_each` keeps stable resource
-addresses based on service names.
+Because repositories are named resources and `for_each` keeps stable addresses
+based on service names.
+
+## Speakable Interview Answers
+
+- "ECR is the private registry where CI pushes container images before EKS
+  pulls them."
+- "Each service gets its own repository so history, retention, and permissions
+  stay clean."
+- "I enabled immutable tags because a deployed tag should always map to the same
+  artifact."
+- "I enabled scan on push for early vulnerability visibility, but scanning alone
+  is not enough without a response policy."
+- "I added lifecycle rules because image storage grows quietly in active CI/CD
+  systems."
 
 ## Verification Commands
 
@@ -353,10 +396,4 @@ Run from:
 terraform state list | grep ecr
 terraform output ecr_repository_urls
 terraform plan | grep "No changes"
-```
-
-Expected plan result:
-
-```text
-No changes. Your infrastructure matches the configuration.
 ```

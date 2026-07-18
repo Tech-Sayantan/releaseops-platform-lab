@@ -1,5 +1,32 @@
 # Interview Cheatsheet
 
+Last updated: 2026-07-18
+
+## How To Use This Sheet
+
+This file is not meant to teach the topic from zero. It is meant to help you
+answer quickly once you already studied the deeper notes.
+
+Rule:
+
+```text
+Deep-dive note = understanding
+Cheatsheet     = fast interview delivery
+```
+
+## Fast Revision Path
+
+If you have only a few minutes, revise these in order:
+
+1. Terraform state and locking
+2. Module design
+3. Subnet tiers
+4. NAT and VPC endpoint
+5. DB subnet group and RDS SG path
+6. KMS vs Secrets Manager
+7. EKS subnet tags
+8. Lab vs production comparison
+
 ## Terraform State
 
 Question:

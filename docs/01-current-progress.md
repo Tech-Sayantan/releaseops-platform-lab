@@ -1,6 +1,46 @@
 # Current Progress Notes
 
-Last updated: 2026-07-19
+Last updated: 2026-07-18
+
+## Sleepy Restart Path
+
+If you open this repo tomorrow and feel lost, read these sections in order:
+
+1. `What Exists Right Now`
+2. `Current AWS Shape`
+3. `Next Planned Work`
+4. `RDS PostgreSQL Completed`
+5. `ECR Completed`
+6. `SQS And DLQ Completed`
+
+This file is meant to answer one practical question:
+
+```text
+Where exactly are we in the lab right now?
+```
+
+## One-Minute Restart Summary
+
+Right now the AWS foundation already exists:
+
+- Terraform backend
+- networking
+- RDS
+- ECR
+- SQS and DLQ
+
+What does not exist yet:
+
+- IAM/OIDC for GitHub Actions
+- EKS
+- application code
+- Docker build flow
+- Helm
+- GitOps
+- observability
+
+So if you restart tomorrow, do not rebuild the backend, VPC, RDS, ECR, or SQS.
+We continue from the next layer above them.
 
 ## What Exists Right Now
 

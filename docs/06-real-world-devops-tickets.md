@@ -1,5 +1,35 @@
 # Real-World Terraform And AWS DevOps Tickets
 
+Last updated: 2026-07-18
+
+## Sleepy Revision Path
+
+If you are revising late at night, read these sections first:
+
+1. `How Infrastructure Work Usually Arrives`
+2. `Regular Terraform And AWS Tasks`
+3. `Occasional Bigger Projects And Change Requests`
+4. `How A Senior DevOps Engineer Handles A Ticket`
+5. `Interview Story Template`
+6. `Speakable Interview Lines`
+
+Core story:
+
+```text
+Real DevOps work is not only "create infrastructure."
+Most work is small, repeated, operational, and review-heavy.
+Bigger platform projects happen too, but less often.
+Senior engineers think about blast radius, verification, cost, and rollback.
+```
+
+## One-Minute Mental Model
+
+Think of a real DevOps team like an internal platform service team.
+
+Developers, security, compliance, product, and operations all bring requests.
+The DevOps engineer turns those requests into safe infrastructure changes,
+automation, access control, and troubleshooting work.
+
 This note is for interview preparation. It explains what Terraform and AWS work
 usually looks like inside a real DevOps, platform, SRE, or cloud infrastructure
 team.

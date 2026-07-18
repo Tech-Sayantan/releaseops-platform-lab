@@ -1,6 +1,6 @@
 # How To Use These Notes
 
-Last updated: 2026-07-19
+Last updated: 2026-07-18
 
 These notes are not only project documentation. They are interview revision
 notes.
