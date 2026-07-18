@@ -37,6 +37,11 @@ Completed:
 - Private encrypted PostgreSQL RDS instance applied.
 - Safe root outputs added for database endpoint, port, name, secret ARN, and
   KMS key ARN.
+- ECR module created and wired into the dev root.
+- ECR repositories applied for `api`, `worker`, `notifications`, and
+  `frontend`.
+- ECR scan on push, immutable image tags, and lifecycle policies applied.
+- Safe root outputs added for ECR repository names, URLs, and ARNs.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -44,6 +49,8 @@ Observed identifiers from the latest verified terminal output:
 - NAT Gateway: `nat-07705be2ac693339d`
 - S3 Gateway VPC Endpoint: `vpce-06175a13cdaf34560`
 - RDS identifier: `releaseops-dev-postgres`
+- ECR repositories: `releaseops-dev/api`, `releaseops-dev/worker`,
+  `releaseops-dev/notifications`, `releaseops-dev/frontend`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -52,7 +59,7 @@ Do not treat these IDs as permanent. Verify live state before using them.
 Not started:
 
 - Terraform state-address refactor exercise
-- IAM, ECR, SQS/DLQ
+- IAM, SQS/DLQ
 - EKS and add-ons
 - Java application
 - Docker images
@@ -73,10 +80,9 @@ Resume inside:
 Continue after **Networking Module Phase 2**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Add ECR repositories for the four Java services.
-3. Add SQS deployment queue and DLQ.
-4. Add IAM/OIDC preparation for GitHub Actions.
-5. Continue toward EKS modules.
+2. Add SQS deployment queue and DLQ.
+3. Add IAM/OIDC preparation for GitHub Actions.
+4. Continue toward EKS modules.
 
 The guide must deliver this one small type-along block at a time.
 

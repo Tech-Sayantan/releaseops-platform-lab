@@ -37,10 +37,12 @@ Completed:
   security group.
 - Terraform outputs for VPC, subnet, NAT Gateway, S3 endpoint, DB subnet group,
   security group IDs, secret/KMS ARNs, and safe RDS connection metadata.
+- ECR repositories for `api`, `worker`, `notifications`, and `frontend`.
+- ECR image scan on push, immutable tags, and lifecycle cleanup policies.
 
 Not started yet:
 
-- IAM, ECR, SQS/DLQ
+- IAM, SQS/DLQ
 - EKS and add-ons
 - Java services
 - Docker images
@@ -61,13 +63,16 @@ Not started yet:
 │   ├── 03-networking-deep-dive.md
 │   ├── 04-interview-cheatsheet.md
 │   ├── 05-rds-networking-notes.md
-│   └── 06-real-world-devops-tickets.md
+│   ├── 06-real-world-devops-tickets.md
+│   └── 07-ecr-deep-dive.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
 │   └── modules/
 │       ├── networking/
 │       │   └── Reusable networking module
+│       ├── ecr/
+│       │   └── Reusable ECR module for service image repositories
 │       └── rds/
 │           └── RDS networking and security preparation module
 ├── PROJECT_MASTER_PLAN.md
@@ -106,3 +111,4 @@ Start with:
 - [Interview Cheatsheet](docs/04-interview-cheatsheet.md)
 - [RDS Networking Notes](docs/05-rds-networking-notes.md)
 - [Real-World DevOps Tickets](docs/06-real-world-devops-tickets.md)
+- [ECR Deep Dive](docs/07-ecr-deep-dive.md)

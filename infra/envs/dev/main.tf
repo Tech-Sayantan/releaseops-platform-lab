@@ -30,3 +30,17 @@ module "rds" {
     ManagedBy   = "terraform"
   }
 }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  name_prefix      = "${var.project_name}-${var.environment}"
+  repository_names = var.ecr_repository_names
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    ManagedBy   = "terraform"
+  }
+}

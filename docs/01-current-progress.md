@@ -25,7 +25,11 @@ We have built the foundation for the ReleaseOps platform:
 - KMS key and alias for database-related encryption
 - Secrets Manager secret and secret version for PostgreSQL credentials
 - private encrypted PostgreSQL RDS instance
+- reusable ECR module
+- ECR repositories for `api`, `worker`, `notifications`, and `frontend`
+- ECR lifecycle policies for image cleanup
 - outputs for important networking and RDS preparation IDs
+- outputs for ECR repository names, URLs, and ARNs
 
 ## Current AWS Shape
 
@@ -87,6 +91,7 @@ Useful focused checks:
 ```bash
 terraform state list | grep database
 terraform state list | grep -E "nat|vpc_endpoint|route_table|subnet"
+terraform state list | grep ecr
 ```
 
 ## What To Watch In Every Plan
@@ -135,12 +140,11 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 Next we should build the next AWS platform-support layer:
 
-- ECR repositories for the four Java services
 - SQS deployment queue and DLQ
 - IAM/OIDC preparation for GitHub Actions
 - additional notes around RDS operational gotchas
 
-Then we move toward IAM, ECR, SQS, RDS, and EKS.
+Then we move toward IAM, SQS, EKS, and the Java application.
 
 ## RDS-Ready Networking Completed
 
@@ -195,3 +199,33 @@ database_kms_key_arn
 ```
 
 The password is intentionally not exposed through Terraform outputs.
+
+## ECR Completed
+
+We created a reusable `ecr` module and wired it into the dev root.
+
+Current repositories:
+
+```text
+releaseops-dev/api
+releaseops-dev/worker
+releaseops-dev/notifications
+releaseops-dev/frontend
+```
+
+Each repository has:
+
+- scan on push enabled
+- immutable image tags
+- AES256 encryption
+- lifecycle policy for cleanup
+
+Safe root outputs now include:
+
+```text
+ecr_repository_names
+ecr_repository_urls
+ecr_repository_arns
+```
+
+The URLs are what GitHub Actions will later use for Docker image pushes.

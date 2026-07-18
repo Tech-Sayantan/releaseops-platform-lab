@@ -18,3 +18,10 @@ database_subnet_cidrs = [
   "10.40.20.0/24",
   "10.40.21.0/24",
 ]
+
+ecr_repository_names = [
+  "api",
+  "worker",
+  "notifications",
+  "frontend"
+]

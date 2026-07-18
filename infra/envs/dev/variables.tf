@@ -51,3 +51,13 @@ variable "database_subnet_cidrs" {
   description = "CIDR blocks for isolated database subnets."
   type        = list(string)
 }
+
+variable "ecr_repository_names" {
+  description = "Service names that need ECR repositories."
+  type        = list(string)
+
+  validation {
+    condition     = length(var.ecr_repository_names) > 0
+    error_message = "ecr_repository_names must contain at least one service name."
+  }
+}

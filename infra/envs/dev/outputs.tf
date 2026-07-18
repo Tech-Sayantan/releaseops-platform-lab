@@ -66,3 +66,18 @@ output "database_name" {
   description = "Initial database name created in PostgreSQL."
   value       = module.rds.database_name
 }
+
+output "ecr_repository_names" {
+  description = "Names of the ECR repositories."
+  value       = module.ecr.repository_names
+}
+
+output "ecr_repository_urls" {
+  description = "URLs of the ECR repositories used for docker push."
+  value       = module.ecr.repository_urls
+}
+
+output "ecr_repository_arns" {
+  description = "ARNs of the ECR repositories."
+  value       = module.ecr.repository_arns
+}
