@@ -1,6 +1,6 @@
 # Current Progress Notes
 
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 
 ## Sleepy Restart Path
 
@@ -14,6 +14,7 @@ If you open this repo tomorrow and feel lost, read these sections in order:
 6. `SQS And DLQ Completed`
 7. `IAM And GitHub OIDC Completed`
 8. `EKS Foundation Completed`
+9. `EKS Managed Add-Ons Completed`
 
 This file is meant to answer one practical question:
 
@@ -32,10 +33,10 @@ Right now the AWS foundation already exists:
 - SQS and DLQ
 - IAM/OIDC for GitHub Actions
 - EKS cluster and one managed worker node
+- EKS managed add-ons
 
 What does not exist yet:
 
-- EKS managed add-ons
 - application code
 - Docker build flow
 - Helm
@@ -87,6 +88,9 @@ We have built the foundation for the ReleaseOps platform:
 - one `t3.small` worker node in private application subnets
 - restricted public EKS API endpoint access
 - outputs for EKS cluster, endpoint, security group, roles, and node group
+- EKS managed add-ons: VPC CNI, CoreDNS, kube-proxy, EBS CSI, and EKS Pod
+  Identity Agent
+- EBS CSI Pod Identity role and association
 
 ## Current AWS Shape
 
@@ -152,6 +156,9 @@ terraform state list | grep ecr
 terraform state list | grep sqs
 terraform state list | grep -E "github_oidc|iam"
 terraform state list | grep eks
+aws eks list-addons --cluster-name releaseops-dev-eks --region us-east-1
+kubectl get pods -n kube-system -o wide
+kubectl get pods -n kube-system -l app=ebs-csi-controller
 ```
 
 ## What To Watch In Every Plan
@@ -198,11 +205,12 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 ## Next Planned Work
 
-Next we should build the next AWS platform-support layer:
+Next we should build the next Kubernetes platform layer:
 
-- EKS managed add-ons: VPC CNI, CoreDNS, kube-proxy, EBS CSI, Pod Identity Agent
-- Kubernetes access and `kubectl` checks
-- additional notes around EKS troubleshooting and add-on ownership
+- namespaces
+- basic RBAC/service account discussion
+- resource requests and limits
+- application deployment preparation
 
 Then we move toward namespaces, platform add-ons, and the Java application.
 
@@ -420,4 +428,40 @@ eks_cluster_security_group_id
 eks_cluster_role_arn
 eks_node_role_arn
 eks_node_group_name
+```
+
+## EKS Managed Add-Ons Completed
+
+We added the standard EKS add-ons needed before application deployment:
+
+```text
+vpc-cni
+coredns
+kube-proxy
+aws-ebs-csi-driver
+eks-pod-identity-agent
+```
+
+The timeout during apply did not leave the cluster broken. Live checks showed
+the add-ons existed. The EBS CSI controller initially crashed because it did not
+have AWS credentials to call EC2 APIs for EBS volume work.
+
+We fixed that with a dedicated EKS Pod Identity role:
+
+```text
+releaseops-dev-ebs-csi-role
+```
+
+and a Pod Identity association:
+
+```text
+kube-system/ebs-csi-controller-sa -> releaseops-dev-ebs-csi-role
+```
+
+Final verification:
+
+```text
+Terraform plan: No changes
+EBS CSI controller pods: 6/6 Running
+All core kube-system add-on pods: Running
 ```

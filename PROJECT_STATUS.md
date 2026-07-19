@@ -1,6 +1,6 @@
 # ReleaseOps Platform Lab - Status
 
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 Master plan: `PROJECT_MASTER_PLAN.md`  
 Target teardown complete: 2026-07-26
 
@@ -61,6 +61,11 @@ Completed:
   node group.
 - Local kubeconfig context `releaseops-dev-eks` added and `kubectl get nodes`
   verified one `Ready` node.
+- EKS managed add-ons applied: VPC CNI, CoreDNS, kube-proxy, EBS CSI, and EKS
+  Pod Identity Agent.
+- EBS CSI controller recovered from `CrashLoopBackOff` by adding a dedicated
+  EKS Pod Identity role and association.
+- Terraform plan verified clean after the timeout recovery.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -82,6 +87,10 @@ Observed identifiers from the latest verified terminal output:
 - EKS node group: `releaseops-dev-default`
 - EKS node group status: `ACTIVE`
 - EKS worker node observed by Kubernetes: `ip-10-40-2-87.ec2.internal`
+- EKS managed add-ons: `vpc-cni`, `coredns`, `kube-proxy`,
+  `aws-ebs-csi-driver`, `eks-pod-identity-agent`
+- EBS CSI IAM role: `releaseops-dev-ebs-csi-role`
+- EBS CSI Pod Identity association: `a-lnzlbxltzuvye0lak`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -90,7 +99,6 @@ Do not treat these IDs as permanent. Verify live state before using them.
 Not started:
 
 - Terraform state-address refactor exercise
-- EKS managed add-ons
 - Java application
 - Docker images
 - Helm and GitOps repository
@@ -107,12 +115,13 @@ Resume inside:
 /Users/sayantanchowdhury/Documents/Codex/releaseops-platform-lab
 ```
 
-Continue after **EKS Foundation**:
+Continue after **EKS Managed Add-Ons**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Add EKS managed add-ons: VPC CNI, CoreDNS, kube-proxy, EBS CSI, and Pod
-   Identity Agent.
-3. Continue toward Kubernetes access, namespaces, and platform add-ons.
+2. Create Kubernetes namespaces and basic platform guardrails.
+3. Add storage smoke test later only if needed, because PVCs can create EBS
+   volumes and increase cost.
+4. Continue toward application manifests, Helm, and GitOps.
 
 The guide must deliver this one small type-along block at a time.
 
@@ -138,8 +147,10 @@ Do not run `apply` until the plan has been reviewed.
 ## Current Cost Posture
 
 At this status point, EKS and one worker node now exist. NAT Gateway, KMS,
-Secrets Manager, and RDS PostgreSQL also exist and have cost. ALB should not
-exist yet. Verify live state before relying on this status.
+Secrets Manager, and RDS PostgreSQL also exist and have cost. The EKS add-ons
+do not add a major direct cost by themselves, but the EBS CSI driver can create
+paid EBS volumes later if we create PVCs. ALB should not exist yet. Verify live
+state before relying on this status.
 
 The expensive-resource window has started. Do not leave the EKS cluster, NAT,
 and RDS idle for days. Continue the lab or tear it down by the target date.

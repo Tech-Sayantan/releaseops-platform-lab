@@ -1,6 +1,6 @@
 # Interview Cheatsheet
 
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 
 ## How To Use This Sheet
 
@@ -27,7 +27,8 @@ If you have only a few minutes, revise these in order:
 7. EKS subnet tags
 8. GitHub Actions OIDC
 9. EKS control plane and worker nodes
-10. Lab vs production comparison
+10. EKS add-ons and Pod Identity
+11. Lab vs production comparison
 
 ## Terraform State
 
@@ -346,6 +347,61 @@ Answer:
 > I check the Ingress events, AWS Load Balancer Controller logs, subnet tags,
 > IAM permissions, security groups, and whether the Ingress requested an
 > internet-facing or internal scheme.
+
+## EKS Managed Add-Ons
+
+Question:
+
+> What are EKS managed add-ons?
+
+Answer:
+
+> EKS managed add-ons are AWS-managed installations of common Kubernetes
+> components required by the cluster. In this lab I installed VPC CNI for Pod
+> networking, CoreDNS for service discovery, kube-proxy for Kubernetes service
+> routing, EBS CSI for persistent volumes, and EKS Pod Identity Agent for
+> workload IAM credentials.
+
+## EBS CSI Driver
+
+Question:
+
+> Why does the EBS CSI driver need IAM permissions?
+
+Answer:
+
+> The EBS CSI driver runs inside Kubernetes, but it has to call AWS EC2 APIs to
+> create, attach, detach, describe, and delete EBS volumes. Without AWS
+> credentials, the add-on can exist but its controller Pods can crash when they
+> try to talk to EC2.
+
+## EKS Pod Identity
+
+Question:
+
+> Why use EKS Pod Identity instead of putting all permissions on the node role?
+
+Answer:
+
+> The node role is shared by workloads running on the node, so adding broad
+> permissions there increases blast radius. EKS Pod Identity lets a specific
+> Kubernetes service account assume a specific IAM role. In this lab, only
+> `kube-system/ebs-csi-controller-sa` gets the EBS CSI IAM role.
+
+## EKS Add-On Timeout Troubleshooting
+
+Question:
+
+> Terraform timed out while creating an EKS add-on. What would you check?
+
+Answer:
+
+> First I would check whether AWS actually created the add-on because Terraform
+> can time out while AWS keeps working. Then I would check add-on status,
+> Kubernetes Pods in `kube-system`, pod logs, and Terraform state. In our lab,
+> the EBS CSI add-on existed, but the controller was crashing because it had no
+> AWS credentials. We added a Pod Identity association, restarted the controller,
+> verified the Pods were `6/6 Running`, and confirmed Terraform had no drift.
 
 ## Output-Only Apply
 

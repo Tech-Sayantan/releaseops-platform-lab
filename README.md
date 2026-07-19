@@ -51,10 +51,12 @@ Completed:
   On-Demand worker node.
 - EKS public API endpoint restricted to the current `/32` lab IP, with private
   endpoint access also enabled.
+- EKS managed add-ons for VPC CNI, CoreDNS, kube-proxy, EBS CSI, and EKS Pod
+  Identity Agent.
+- Dedicated EKS Pod Identity role and association for the EBS CSI controller.
 
 Not started yet:
 
-- EKS managed add-ons
 - Java services
 - Docker images
 - Helm charts
@@ -79,7 +81,8 @@ Not started yet:
 │   ├── 07-ecr-deep-dive.md
 │   ├── 08-sqs-dlq-deep-dive.md
 │   ├── 09-iam-oidc-deep-dive.md
-│   └── 10-eks-foundation-deep-dive.md
+│   ├── 10-eks-foundation-deep-dive.md
+│   └── 11-eks-addons-troubleshooting.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -138,3 +141,4 @@ Start with:
 - [SQS And DLQ Deep Dive](docs/08-sqs-dlq-deep-dive.md)
 - [IAM And GitHub OIDC Deep Dive](docs/09-iam-oidc-deep-dive.md)
 - [EKS Foundation Deep Dive](docs/10-eks-foundation-deep-dive.md)
+- [EKS Add-Ons And Troubleshooting](docs/11-eks-addons-troubleshooting.md)
