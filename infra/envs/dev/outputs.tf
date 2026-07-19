@@ -110,3 +110,28 @@ output "deployment_dlq_arn" {
   description = "ARN of the deployment events dead-letter queue."
   value       = module.sqs.dlq_arn
 }
+
+output "github_oidc_provider_arn" {
+  description = "ARN of the GitHub Actions OIDC provider."
+  value       = module.github_oidc.oidc_provider_arn
+}
+
+output "github_actions_role_name" {
+  description = "Name of the IAM role assumed by GitHub Actions."
+  value       = module.github_oidc.github_actions_role_name
+}
+
+output "github_actions_role_arn" {
+  description = "ARN of the IAM role assumed by GitHub Actions."
+  value       = module.github_oidc.github_actions_role_arn
+}
+
+output "github_actions_policy_arn" {
+  description = "ARN of the IAM policy attached to the GitHub Actions role."
+  value       = module.github_oidc.github_actions_policy_arn
+}
+
+output "github_oidc_subject" {
+  description = "GitHub OIDC subject allowed to assume the role."
+  value       = module.github_oidc.github_subject
+}

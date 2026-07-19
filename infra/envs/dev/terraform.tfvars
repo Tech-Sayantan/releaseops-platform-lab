@@ -27,3 +27,6 @@ ecr_repository_names = [
 ]
 
 deployment_queue_name = "deployment-events"
+
+github_repository = "Tech-Sayantan/releaseops-platform-lab"
+github_branch     = "main"

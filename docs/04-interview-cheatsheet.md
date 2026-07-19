@@ -1,6 +1,6 @@
 # Interview Cheatsheet
 
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 ## How To Use This Sheet
 
@@ -25,7 +25,8 @@ If you have only a few minutes, revise these in order:
 5. DB subnet group and RDS SG path
 6. KMS vs Secrets Manager
 7. EKS subnet tags
-8. Lab vs production comparison
+8. GitHub Actions OIDC
+9. Lab vs production comparison
 
 ## Terraform State
 
@@ -218,6 +219,46 @@ Answer:
 > easy teardown. In production I would usually consider Multi-AZ, deletion
 > protection, final snapshots, longer backup retention/PITR, stricter rotation,
 > performance monitoring, and possibly RDS Proxy.
+
+## GitHub Actions OIDC
+
+Question:
+
+> Why use GitHub Actions OIDC instead of AWS access keys?
+
+Answer:
+
+> OIDC lets GitHub Actions get short-lived AWS credentials through STS instead
+> of storing long-lived AWS access keys in GitHub secrets. AWS validates the
+> GitHub token issuer, audience, and subject, then allows the workflow to assume
+> a scoped IAM role.
+
+## IAM Trust Policy Vs Permission Policy
+
+Question:
+
+> What is the difference between an IAM trust policy and a permission policy?
+
+Answer:
+
+> A trust policy decides who can assume a role. A permission policy decides what
+> the role can do after it is assumed. In this lab, the trust policy allows only
+> the `Tech-Sayantan/releaseops-platform-lab` main branch workflow to assume the
+> role, and the permission policy allows Terraform to manage the lab
+> infrastructure.
+
+## OIDC Production Gotcha
+
+Question:
+
+> What would you improve before using this IAM setup in production?
+
+Answer:
+
+> I would reduce the broad lab permissions, split plan and apply roles, scope
+> resources more tightly, restrict by GitHub environment or branch, require
+> approvals before apply, and carefully control IAM permissions because IAM is a
+> high-blast-radius service.
 
 ## Security Group Source
 

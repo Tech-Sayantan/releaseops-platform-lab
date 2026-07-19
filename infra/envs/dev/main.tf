@@ -57,3 +57,18 @@ module "sqs" {
     ManagedBy   = "terraform"
   }
 }
+
+module "github_oidc" {
+  source = "../../modules/iam"
+
+  name_prefix       = "${var.project_name}-${var.environment}"
+  github_repository = var.github_repository
+  github_branch     = var.github_branch
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    ManagedBy   = "terraform"
+  }
+}

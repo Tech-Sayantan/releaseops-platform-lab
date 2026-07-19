@@ -70,3 +70,23 @@ variable "deployment_queue_name" {
     error_message = "deployment_queue_name must contain only lowercase letters, numbers, and hyphens."
   }
 }
+variable "github_repository" {
+  description = "GitHub repository allowed to assume the Terraform IAM role."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))
+    error_message = "github_repository must be in owner/repo format."
+  }
+}
+
+variable "github_branch" {
+  description = "GitHub branch allowed to assume the Terraform IAM role."
+  type        = string
+  default     = "main"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9._/-]+$", var.github_branch))
+    error_message = "github_branch contains unsupported characters."
+  }
+}

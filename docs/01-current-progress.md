@@ -1,6 +1,6 @@
 # Current Progress Notes
 
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 ## Sleepy Restart Path
 
@@ -12,6 +12,7 @@ If you open this repo tomorrow and feel lost, read these sections in order:
 4. `RDS PostgreSQL Completed`
 5. `ECR Completed`
 6. `SQS And DLQ Completed`
+7. `IAM And GitHub OIDC Completed`
 
 This file is meant to answer one practical question:
 
@@ -28,10 +29,10 @@ Right now the AWS foundation already exists:
 - RDS
 - ECR
 - SQS and DLQ
+- IAM/OIDC for GitHub Actions
 
 What does not exist yet:
 
-- IAM/OIDC for GitHub Actions
 - EKS
 - application code
 - Docker build flow
@@ -39,8 +40,8 @@ What does not exist yet:
 - GitOps
 - observability
 
-So if you restart tomorrow, do not rebuild the backend, VPC, RDS, ECR, or SQS.
-We continue from the next layer above them.
+So if you restart tomorrow, do not rebuild the backend, VPC, RDS, ECR, SQS, or
+IAM/OIDC. We continue from the next layer above them.
 
 ## What Exists Right Now
 
@@ -75,6 +76,10 @@ We have built the foundation for the ReleaseOps platform:
 - outputs for important networking and RDS preparation IDs
 - outputs for ECR repository names, URLs, and ARNs
 - outputs for deployment queue and DLQ names, URLs, and ARNs
+- IAM OIDC provider for GitHub Actions
+- IAM role for GitHub Actions Terraform execution
+- IAM policy and attachment for the Terraform execution role
+- outputs for GitHub OIDC provider, role, policy, and allowed subject
 
 ## Current AWS Shape
 
@@ -138,6 +143,7 @@ terraform state list | grep database
 terraform state list | grep -E "nat|vpc_endpoint|route_table|subnet"
 terraform state list | grep ecr
 terraform state list | grep sqs
+terraform state list | grep -E "github_oidc|iam"
 ```
 
 ## What To Watch In Every Plan
@@ -186,10 +192,10 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 Next we should build the next AWS platform-support layer:
 
-- IAM/OIDC preparation for GitHub Actions
-- additional notes around RDS operational gotchas
+- EKS preparation and IAM role/module design for the cluster
+- additional notes around GitHub Actions pipeline design
 
-Then we move toward IAM, EKS, and the Java application.
+Then we move toward EKS, Kubernetes add-ons, and the Java application.
 
 ## RDS-Ready Networking Completed
 
@@ -307,3 +313,46 @@ deployment_dlq_arn
 
 The queue URL is useful for application configuration. The queue ARN is useful
 for IAM permissions and monitoring.
+
+## IAM And GitHub OIDC Completed
+
+We created a reusable `iam` module and wired it into the dev root as:
+
+```text
+module.github_oidc
+```
+
+Current resources:
+
+```text
+module.github_oidc.aws_iam_openid_connect_provider.github
+module.github_oidc.aws_iam_role.github_actions
+module.github_oidc.aws_iam_policy.terraform_permissions
+module.github_oidc.aws_iam_role_policy_attachment.terraform_permissions
+```
+
+Meaning:
+
+- the OIDC provider tells AWS to recognize GitHub Actions identity tokens
+- the IAM role is the AWS identity GitHub Actions can temporarily assume
+- the trust policy restricts assumption to this repo and branch
+- the permission policy gives Terraform enough access for this lab
+- the role-policy attachment connects the role to the permissions
+
+Safe root outputs now include:
+
+```text
+github_oidc_provider_arn
+github_actions_role_name
+github_actions_role_arn
+github_actions_policy_arn
+github_oidc_subject
+```
+
+Important verified subject:
+
+```text
+repo:Tech-Sayantan/releaseops-platform-lab:ref:refs/heads/main
+```
+
+The `github_actions_role_arn` will later be used in GitHub Actions workflows.

@@ -46,6 +46,11 @@ Completed:
 - Deployment events SQS queue and DLQ applied.
 - Redrive policy applied from the main deployment queue to the DLQ.
 - Safe root outputs added for deployment queue and DLQ names, URLs, and ARNs.
+- IAM OIDC provider for GitHub Actions applied.
+- IAM role, policy, and role-policy attachment for future GitHub Actions
+  Terraform automation applied.
+- Safe root outputs added for GitHub OIDC provider, role, policy, and allowed
+  subject.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -57,6 +62,9 @@ Observed identifiers from the latest verified terminal output:
   `releaseops-dev/notifications`, `releaseops-dev/frontend`
 - SQS queues: `releaseops-dev-deployment-events`,
   `releaseops-dev-deployment-events-dlq`
+- GitHub Actions IAM role: `releaseops-dev-github-actions-terraform`
+- GitHub OIDC subject:
+  `repo:Tech-Sayantan/releaseops-platform-lab:ref:refs/heads/main`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -65,7 +73,6 @@ Do not treat these IDs as permanent. Verify live state before using them.
 Not started:
 
 - Terraform state-address refactor exercise
-- IAM
 - EKS and add-ons
 - Java application
 - Docker images
@@ -86,7 +93,7 @@ Resume inside:
 Continue after **Networking Module Phase 2**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Add IAM/OIDC preparation for GitHub Actions.
+2. Start EKS preparation and IAM role design for the cluster.
 3. Continue toward EKS modules.
 
 The guide must deliver this one small type-along block at a time.

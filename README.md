@@ -41,10 +41,14 @@ Completed:
 - ECR image scan on push, immutable tags, and lifecycle cleanup policies.
 - SQS deployment-events queue and dead-letter queue.
 - SQS redrive policy for failed deployment messages.
+- IAM OIDC provider for GitHub Actions.
+- IAM role, policy, and attachment for future Terraform automation from GitHub
+  Actions.
+- Terraform outputs for the GitHub Actions OIDC provider, role, policy, and
+  allowed subject.
 
 Not started yet:
 
-- IAM
 - EKS and add-ons
 - Java services
 - Docker images
@@ -68,7 +72,8 @@ Not started yet:
 │   ├── 05-rds-networking-notes.md
 │   ├── 06-real-world-devops-tickets.md
 │   ├── 07-ecr-deep-dive.md
-│   └── 08-sqs-dlq-deep-dive.md
+│   ├── 08-sqs-dlq-deep-dive.md
+│   └── 09-iam-oidc-deep-dive.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -79,6 +84,8 @@ Not started yet:
 │       │   └── Reusable ECR module for service image repositories
 │       ├── rds/
 │       │   └── RDS networking and security preparation module
+│       ├── iam/
+│       │   └── GitHub Actions OIDC IAM module
 │       └── sqs/
 │           └── Reusable SQS plus DLQ module
 ├── PROJECT_MASTER_PLAN.md
@@ -120,3 +127,4 @@ Start with:
 - [Real-World DevOps Tickets](docs/06-real-world-devops-tickets.md)
 - [ECR Deep Dive](docs/07-ecr-deep-dive.md)
 - [SQS And DLQ Deep Dive](docs/08-sqs-dlq-deep-dive.md)
+- [IAM And GitHub OIDC Deep Dive](docs/09-iam-oidc-deep-dive.md)
