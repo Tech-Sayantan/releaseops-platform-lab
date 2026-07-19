@@ -13,6 +13,7 @@ If you open this repo tomorrow and feel lost, read these sections in order:
 5. `ECR Completed`
 6. `SQS And DLQ Completed`
 7. `IAM And GitHub OIDC Completed`
+8. `EKS Foundation Completed`
 
 This file is meant to answer one practical question:
 
@@ -30,10 +31,11 @@ Right now the AWS foundation already exists:
 - ECR
 - SQS and DLQ
 - IAM/OIDC for GitHub Actions
+- EKS cluster and one managed worker node
 
 What does not exist yet:
 
-- EKS
+- EKS managed add-ons
 - application code
 - Docker build flow
 - Helm
@@ -80,6 +82,11 @@ We have built the foundation for the ReleaseOps platform:
 - IAM role for GitHub Actions Terraform execution
 - IAM policy and attachment for the Terraform execution role
 - outputs for GitHub OIDC provider, role, policy, and allowed subject
+- EKS cluster `releaseops-dev-eks`
+- EKS managed node group `releaseops-dev-default`
+- one `t3.small` worker node in private application subnets
+- restricted public EKS API endpoint access
+- outputs for EKS cluster, endpoint, security group, roles, and node group
 
 ## Current AWS Shape
 
@@ -144,6 +151,7 @@ terraform state list | grep -E "nat|vpc_endpoint|route_table|subnet"
 terraform state list | grep ecr
 terraform state list | grep sqs
 terraform state list | grep -E "github_oidc|iam"
+terraform state list | grep eks
 ```
 
 ## What To Watch In Every Plan
@@ -192,10 +200,11 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 Next we should build the next AWS platform-support layer:
 
-- EKS preparation and IAM role/module design for the cluster
-- additional notes around GitHub Actions pipeline design
+- EKS managed add-ons: VPC CNI, CoreDNS, kube-proxy, EBS CSI, Pod Identity Agent
+- Kubernetes access and `kubectl` checks
+- additional notes around EKS troubleshooting and add-on ownership
 
-Then we move toward EKS, Kubernetes add-ons, and the Java application.
+Then we move toward namespaces, platform add-ons, and the Java application.
 
 ## RDS-Ready Networking Completed
 
@@ -356,3 +365,59 @@ repo:Tech-Sayantan/releaseops-platform-lab:ref:refs/heads/main
 ```
 
 The `github_actions_role_arn` will later be used in GitHub Actions workflows.
+
+## EKS Foundation Completed
+
+We created a reusable `eks` module and wired it into the dev root.
+
+Current resources:
+
+```text
+module.eks.aws_eks_cluster.this
+module.eks.aws_eks_node_group.default
+module.eks.aws_iam_role.cluster
+module.eks.aws_iam_role.node
+module.eks.aws_iam_role_policy_attachment.cluster_policy
+module.eks.aws_iam_role_policy_attachment.node_cni_policy
+module.eks.aws_iam_role_policy_attachment.node_ecr_policy
+module.eks.aws_iam_role_policy_attachment.node_worker_policy
+```
+
+Current live cluster:
+
+```text
+releaseops-dev-eks
+```
+
+Current live node group:
+
+```text
+releaseops-dev-default
+```
+
+Verified with:
+
+```bash
+aws eks describe-cluster --name releaseops-dev-eks --region us-east-1
+aws eks describe-nodegroup --cluster-name releaseops-dev-eks --nodegroup-name releaseops-dev-default --region us-east-1
+aws eks update-kubeconfig --name releaseops-dev-eks --region us-east-1 --alias releaseops-dev-eks
+kubectl get nodes -o wide
+```
+
+The node was observed as:
+
+```text
+ip-10-40-2-87.ec2.internal   Ready
+```
+
+Safe root outputs now include:
+
+```text
+eks_cluster_name
+eks_cluster_arn
+eks_cluster_endpoint
+eks_cluster_security_group_id
+eks_cluster_role_arn
+eks_node_role_arn
+eks_node_group_name
+```

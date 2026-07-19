@@ -72,3 +72,24 @@ module "github_oidc" {
     ManagedBy   = "terraform"
   }
 }
+
+module "eks" {
+  source = "../../modules/eks"
+
+  name_prefix                          = "${var.project_name}-${var.environment}"
+  cluster_version                      = var.eks_cluster_version
+  vpc_id                               = module.networking.vpc_id
+  private_subnet_ids                   = module.networking.private_subnet_ids
+  node_instance_types                  = var.eks_node_instance_types
+  desired_size                         = var.eks_desired_size
+  min_size                             = var.eks_min_size
+  max_size                             = var.eks_max_size
+  cluster_endpoint_public_access_cidrs = var.eks_cluster_endpoint_public_access_cidrs
+
+  tags = {
+    Project     = var.project_name
+    Environment = var.environment
+    Owner       = var.owner
+    ManagedBy   = "terraform"
+  }
+}

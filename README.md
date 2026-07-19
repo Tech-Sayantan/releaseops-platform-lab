@@ -46,10 +46,15 @@ Completed:
   Actions.
 - Terraform outputs for the GitHub Actions OIDC provider, role, policy, and
   allowed subject.
+- EKS cluster `releaseops-dev-eks` on Kubernetes `1.34`.
+- EKS managed node group `releaseops-dev-default` with one `t3.small`
+  On-Demand worker node.
+- EKS public API endpoint restricted to the current `/32` lab IP, with private
+  endpoint access also enabled.
 
 Not started yet:
 
-- EKS and add-ons
+- EKS managed add-ons
 - Java services
 - Docker images
 - Helm charts
@@ -73,7 +78,8 @@ Not started yet:
 │   ├── 06-real-world-devops-tickets.md
 │   ├── 07-ecr-deep-dive.md
 │   ├── 08-sqs-dlq-deep-dive.md
-│   └── 09-iam-oidc-deep-dive.md
+│   ├── 09-iam-oidc-deep-dive.md
+│   └── 10-eks-foundation-deep-dive.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -86,6 +92,8 @@ Not started yet:
 │       │   └── RDS networking and security preparation module
 │       ├── iam/
 │       │   └── GitHub Actions OIDC IAM module
+│       ├── eks/
+│       │   └── EKS cluster and managed node group module
 │       └── sqs/
 │           └── Reusable SQS plus DLQ module
 ├── PROJECT_MASTER_PLAN.md
@@ -111,8 +119,9 @@ RDS, or EKS resources.
 ## Cost Warning
 
 The lab currently has a NAT Gateway, customer-managed KMS key, Secrets Manager
-secret, and RDS PostgreSQL instance. These are real paid AWS resources. Keep the
-lab moving and tear down by the target date in `PROJECT_MASTER_PLAN.md`.
+secret, RDS PostgreSQL instance, EKS control plane, and one `t3.small` EKS
+worker node. These are real paid AWS resources. Keep the lab moving and tear
+down by the target date in `PROJECT_MASTER_PLAN.md`.
 
 ## Learning Notes
 
@@ -128,3 +137,4 @@ Start with:
 - [ECR Deep Dive](docs/07-ecr-deep-dive.md)
 - [SQS And DLQ Deep Dive](docs/08-sqs-dlq-deep-dive.md)
 - [IAM And GitHub OIDC Deep Dive](docs/09-iam-oidc-deep-dive.md)
+- [EKS Foundation Deep Dive](docs/10-eks-foundation-deep-dive.md)

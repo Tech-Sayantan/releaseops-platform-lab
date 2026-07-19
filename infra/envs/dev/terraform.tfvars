@@ -30,3 +30,5 @@ deployment_queue_name = "deployment-events"
 
 github_repository = "Tech-Sayantan/releaseops-platform-lab"
 github_branch     = "main"
+
+eks_cluster_endpoint_public_access_cidrs = ["203.92.62.70/32"]

@@ -90,3 +90,38 @@ variable "github_branch" {
     error_message = "github_branch contains unsupported characters."
   }
 }
+
+variable "eks_cluster_version" {
+  description = "Kubernetes version for the EKS cluster."
+  type        = string
+  default     = "1.34"
+}
+
+variable "eks_node_instance_types" {
+  description = "EC2 instance types for the EKS managed node group."
+  type        = list(string)
+  default     = ["t3.small"]
+}
+
+variable "eks_desired_size" {
+  description = "Desired number of EKS worker nodes."
+  type        = number
+  default     = 1
+}
+
+variable "eks_min_size" {
+  description = "Minimum number of EKS worker nodes."
+  type        = number
+  default     = 1
+}
+
+variable "eks_max_size" {
+  description = "Maximum number of EKS worker nodes."
+  type        = number
+  default     = 2
+}
+
+variable "eks_cluster_endpoint_public_access_cidrs" {
+  description = "CIDR blocks allowed to access the public EKS Kubernetes API endpoint."
+  type        = list(string)
+}

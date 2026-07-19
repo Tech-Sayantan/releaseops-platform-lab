@@ -26,7 +26,8 @@ If you have only a few minutes, revise these in order:
 6. KMS vs Secrets Manager
 7. EKS subnet tags
 8. GitHub Actions OIDC
-9. Lab vs production comparison
+9. EKS control plane and worker nodes
+10. Lab vs production comparison
 
 ## Terraform State
 
@@ -259,6 +260,55 @@ Answer:
 > resources more tightly, restrict by GitHub environment or branch, require
 > approvals before apply, and carefully control IAM permissions because IAM is a
 > high-blast-radius service.
+
+## EKS Control Plane
+
+Question:
+
+> What is the EKS control plane?
+
+Answer:
+
+> The EKS control plane is the AWS-managed Kubernetes brain. It exposes the
+> Kubernetes API server and runs the control-plane components. I do not SSH into
+> it; I interact with it through `kubectl` and AWS APIs.
+
+## EKS Worker Nodes
+
+Question:
+
+> Where do Pods actually run in EKS?
+
+Answer:
+
+> Pods run on worker nodes, not on the control plane. In this lab, the worker
+> node comes from an EKS managed node group using a `t3.small` EC2 instance in
+> private application subnets.
+
+## EKS IAM Roles
+
+Question:
+
+> Why does EKS need separate IAM roles?
+
+Answer:
+
+> The control plane role is assumed by the EKS service. The node role is assumed
+> by EC2 worker nodes. The node role needs permissions to join the cluster, pull
+> images from ECR, and support VPC CNI networking.
+
+## EKS API Endpoint Access
+
+Question:
+
+> Why restrict the EKS public API endpoint?
+
+Answer:
+
+> The Kubernetes API server is the main administrative entry point into the
+> cluster. For this lab I kept public access enabled for `kubectl`, but
+> restricted it to my current `/32` public IP. In stricter production setups, I
+> would use private-only access or access through VPN/bastion/approved CIDRs.
 
 ## Security Group Source
 

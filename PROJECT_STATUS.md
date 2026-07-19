@@ -51,6 +51,16 @@ Completed:
   Terraform automation applied.
 - Safe root outputs added for GitHub OIDC provider, role, policy, and allowed
   subject.
+- EKS module created and wired into the dev root.
+- EKS cluster `releaseops-dev-eks` applied on Kubernetes `1.34`.
+- EKS managed node group `releaseops-dev-default` applied with one `t3.small`
+  On-Demand worker node.
+- EKS public API endpoint restricted to `203.92.62.70/32`; private endpoint
+  access is also enabled.
+- Safe root outputs added for EKS cluster, endpoint, security group, roles, and
+  node group.
+- Local kubeconfig context `releaseops-dev-eks` added and `kubectl get nodes`
+  verified one `Ready` node.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -65,6 +75,13 @@ Observed identifiers from the latest verified terminal output:
 - GitHub Actions IAM role: `releaseops-dev-github-actions-terraform`
 - GitHub OIDC subject:
   `repo:Tech-Sayantan/releaseops-platform-lab:ref:refs/heads/main`
+- EKS cluster: `releaseops-dev-eks`
+- EKS cluster status: `ACTIVE`
+- EKS cluster version: `1.34`
+- EKS cluster security group: `sg-0a81133fb056d7bf1`
+- EKS node group: `releaseops-dev-default`
+- EKS node group status: `ACTIVE`
+- EKS worker node observed by Kubernetes: `ip-10-40-2-87.ec2.internal`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -73,7 +90,7 @@ Do not treat these IDs as permanent. Verify live state before using them.
 Not started:
 
 - Terraform state-address refactor exercise
-- EKS and add-ons
+- EKS managed add-ons
 - Java application
 - Docker images
 - Helm and GitOps repository
@@ -90,11 +107,12 @@ Resume inside:
 /Users/sayantanchowdhury/Documents/Codex/releaseops-platform-lab
 ```
 
-Continue after **Networking Module Phase 2**:
+Continue after **EKS Foundation**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Start EKS preparation and IAM role design for the cluster.
-3. Continue toward EKS modules.
+2. Add EKS managed add-ons: VPC CNI, CoreDNS, kube-proxy, EBS CSI, and Pod
+   Identity Agent.
+3. Continue toward Kubernetes access, namespaces, and platform add-ons.
 
 The guide must deliver this one small type-along block at a time.
 
@@ -119,12 +137,12 @@ Do not run `apply` until the plan has been reviewed.
 
 ## Current Cost Posture
 
-At this status point, EKS, ALB, and worker nodes should not exist yet. NAT
-Gateway, KMS, Secrets Manager, and RDS PostgreSQL do exist and have cost.
-Verify live state before relying on this status.
+At this status point, EKS and one worker node now exist. NAT Gateway, KMS,
+Secrets Manager, and RDS PostgreSQL also exist and have cost. ALB should not
+exist yet. Verify live state before relying on this status.
 
-The expensive-resource window starts no earlier than July 23 unless Tan reaches
-the apply milestone sooner and is ready to continue without idle days.
+The expensive-resource window has started. Do not leave the EKS cluster, NAT,
+and RDS idle for days. Continue the lab or tear it down by the target date.
 
 ## Locked Decisions
 
