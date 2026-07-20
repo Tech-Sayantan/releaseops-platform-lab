@@ -465,3 +465,39 @@ Terraform plan: No changes
 EBS CSI controller pods: 6/6 Running
 All core kube-system add-on pods: Running
 ```
+
+## Kubernetes Platform Guardrails Completed
+
+We added the first Kubernetes-side platform layer:
+
+```text
+k8s/platform/base
+```
+
+Created files:
+
+```text
+kustomization.yaml
+namespaces.yaml
+releaseops-serviceaccounts.yaml
+releaseops-resourcequota.yaml
+releaseops-limitrange.yaml
+```
+
+Applied and verified live objects:
+
+```text
+namespaces: releaseops, observability, argocd
+service accounts: api, worker, notifications, frontend
+ResourceQuota: releaseops-compute-quota
+LimitRange: releaseops-default-container-limits
+```
+
+This created Kubernetes objects only. It did not create a LoadBalancer, EBS
+volume, RDS instance, or new EC2 node.
+
+Next Kubernetes topic:
+
+```text
+RBAC and first app-facing permissions
+```

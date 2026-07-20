@@ -414,6 +414,53 @@ Answer:
 > Yes. Outputs are stored in state. Adding or changing outputs can require an
 > apply even when no AWS resources are added, changed, or destroyed.
 
+## Namespace
+
+Question:
+
+> Is a Kubernetes namespace a security boundary?
+
+Answer:
+
+> Not by itself. A namespace is a logical boundary. It becomes useful for
+> security and operations when combined with RBAC, ResourceQuota, LimitRange,
+> NetworkPolicy, labels, and admission policies.
+
+## ServiceAccount
+
+Question:
+
+> Why create separate service accounts for workloads?
+
+Answer:
+
+> A service account is the identity of a Pod inside Kubernetes. I create
+> separate service accounts per workload so RBAC and cloud permissions can be
+> scoped cleanly instead of running everything as the default service account.
+
+## ResourceQuota
+
+Question:
+
+> Why use ResourceQuota?
+
+Answer:
+
+> ResourceQuota caps total resource consumption in a namespace. It helps prevent
+> one team or application from accidentally consuming the whole shared cluster.
+
+## LimitRange
+
+Question:
+
+> What does LimitRange do?
+
+Answer:
+
+> LimitRange sets default and allowed CPU/memory requests and limits for
+> containers. Requests help scheduling, limits cap runtime usage, and defaults
+> prevent workloads from running with no resource definition.
+
 ## Lab vs Production
 
 Question:

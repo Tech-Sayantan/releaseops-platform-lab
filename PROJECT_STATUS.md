@@ -1,6 +1,6 @@
 # ReleaseOps Platform Lab - Status
 
-Last updated: 2026-07-20
+Last updated: 2026-07-21
 Master plan: `PROJECT_MASTER_PLAN.md`  
 Target teardown complete: 2026-07-26
 
@@ -66,6 +66,8 @@ Completed:
 - EBS CSI controller recovered from `CrashLoopBackOff` by adding a dedicated
   EKS Pod Identity role and association.
 - Terraform plan verified clean after the timeout recovery.
+- Kubernetes platform guardrails applied and verified: namespaces, service
+  accounts, ResourceQuota, and LimitRange.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -91,6 +93,10 @@ Observed identifiers from the latest verified terminal output:
   `aws-ebs-csi-driver`, `eks-pod-identity-agent`
 - EBS CSI IAM role: `releaseops-dev-ebs-csi-role`
 - EBS CSI Pod Identity association: `a-lnzlbxltzuvye0lak`
+- Kubernetes namespaces: `releaseops`, `observability`, `argocd`
+- ReleaseOps service accounts: `api`, `worker`, `notifications`, `frontend`
+- ReleaseOps quota: `releaseops-compute-quota`
+- ReleaseOps limit range: `releaseops-default-container-limits`
 - State bucket: `releaseops-tan25-dev-tfstate`
 - Legacy DynamoDB table: `releaseops-tan25-dev-tf-locks`
 
@@ -118,7 +124,7 @@ Resume inside:
 Continue after **EKS Managed Add-Ons**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Create Kubernetes namespaces and basic platform guardrails.
+2. Continue with RBAC and first app-facing permissions.
 3. Add storage smoke test later only if needed, because PVCs can create EBS
    volumes and increase cost.
 4. Continue toward application manifests, Helm, and GitOps.
