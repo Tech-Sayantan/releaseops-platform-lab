@@ -66,6 +66,8 @@ Completed:
 - EBS CSI controller recovered from `CrashLoopBackOff` by adding a dedicated
   EKS Pod Identity role and association.
 - Terraform plan verified clean after the timeout recovery.
+- Kubernetes platform guardrail manifests added, applied, and verified for
+  namespaces, service accounts, ResourceQuota, and LimitRange.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -118,7 +120,8 @@ Resume inside:
 Continue after **EKS Managed Add-Ons**:
 
 1. Confirm `terraform plan` still shows no changes.
-2. Create Kubernetes namespaces and basic platform guardrails.
+2. Start basic RBAC discussion and decide the first app-facing Kubernetes
+   permissions.
 3. Add storage smoke test later only if needed, because PVCs can create EBS
    volumes and increase cost.
 4. Continue toward application manifests, Helm, and GitOps.

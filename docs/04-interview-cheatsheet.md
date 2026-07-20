@@ -28,7 +28,8 @@ If you have only a few minutes, revise these in order:
 8. GitHub Actions OIDC
 9. EKS control plane and worker nodes
 10. EKS add-ons and Pod Identity
-11. Lab vs production comparison
+11. Namespace, ResourceQuota, and LimitRange
+12. Lab vs production comparison
 
 ## Terraform State
 
@@ -413,6 +414,41 @@ Answer:
 
 > Yes. Outputs are stored in state. Adding or changing outputs can require an
 > apply even when no AWS resources are added, changed, or destroyed.
+
+## Namespace
+
+Question:
+
+> Is a Kubernetes namespace a security boundary?
+
+Answer:
+
+> Not by itself. A namespace is a logical boundary. It becomes useful for
+> security and operations when combined with RBAC, ResourceQuota, LimitRange,
+> NetworkPolicy, labels, and admission policies.
+
+## ResourceQuota
+
+Question:
+
+> Why use ResourceQuota?
+
+Answer:
+
+> ResourceQuota caps the total resources a namespace can consume. It prevents
+> one team or application from accidentally consuming the whole shared cluster.
+
+## LimitRange
+
+Question:
+
+> What does LimitRange do?
+
+Answer:
+
+> LimitRange sets default and allowed CPU/memory requests and limits for
+> containers in a namespace. This helps the scheduler place Pods properly and
+> prevents workloads from running with completely uncontrolled resource usage.
 
 ## Lab vs Production
 
