@@ -15,7 +15,6 @@ If you open this repo tomorrow and feel lost, read these sections in order:
 7. `IAM And GitHub OIDC Completed`
 8. `EKS Foundation Completed`
 9. `EKS Managed Add-Ons Completed`
-10. `Kubernetes Platform Guardrails Added`
 
 This file is meant to answer one practical question:
 
@@ -35,7 +34,6 @@ Right now the AWS foundation already exists:
 - IAM/OIDC for GitHub Actions
 - EKS cluster and one managed worker node
 - EKS managed add-ons
-- Kubernetes namespace and guardrail manifests applied
 
 What does not exist yet:
 
@@ -93,8 +91,6 @@ We have built the foundation for the ReleaseOps platform:
 - EKS managed add-ons: VPC CNI, CoreDNS, kube-proxy, EBS CSI, and EKS Pod
   Identity Agent
 - EBS CSI Pod Identity role and association
-- Kubernetes platform guardrail manifests applied and verified for namespaces,
-  service accounts, ResourceQuota, and LimitRange
 
 ## Current AWS Shape
 
@@ -211,8 +207,8 @@ This updated subnet tags in place for EKS and load balancer discovery.
 
 Next we should build the next Kubernetes platform layer:
 
-- basic RBAC discussion
-- first app-facing Kubernetes permissions
+- namespaces
+- basic RBAC/service account discussion
 - resource requests and limits
 - application deployment preparation
 
@@ -468,35 +464,4 @@ Final verification:
 Terraform plan: No changes
 EBS CSI controller pods: 6/6 Running
 All core kube-system add-on pods: Running
-```
-
-## Kubernetes Platform Guardrails Added
-
-We added Kubernetes YAML under:
-
-```text
-k8s/platform/base
-```
-
-This includes:
-
-```text
-releaseops namespace
-observability namespace
-argocd namespace
-service accounts for api, worker, notifications, and frontend
-ResourceQuota for releaseops
-LimitRange for releaseops
-```
-
-These objects are the first Kubernetes-side guardrails. They were applied and
-verified on the EKS cluster. They do not create new AWS paid resources.
-
-Verified live objects:
-
-```text
-namespaces: releaseops, observability, argocd
-service accounts: api, worker, notifications, frontend
-ResourceQuota: releaseops-compute-quota
-LimitRange: releaseops-default-container-limits
 ```

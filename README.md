@@ -54,8 +54,6 @@ Completed:
 - EKS managed add-ons for VPC CNI, CoreDNS, kube-proxy, EBS CSI, and EKS Pod
   Identity Agent.
 - Dedicated EKS Pod Identity role and association for the EBS CSI controller.
-- Kubernetes platform guardrail manifests applied and verified for namespaces,
-  service accounts, ResourceQuota, and LimitRange.
 
 Not started yet:
 
@@ -84,8 +82,7 @@ Not started yet:
 │   ├── 08-sqs-dlq-deep-dive.md
 │   ├── 09-iam-oidc-deep-dive.md
 │   ├── 10-eks-foundation-deep-dive.md
-│   ├── 11-eks-addons-troubleshooting.md
-│   └── 12-kubernetes-platform-guardrails.md
+│   └── 11-eks-addons-troubleshooting.md
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -102,9 +99,6 @@ Not started yet:
 │       │   └── EKS cluster and managed node group module
 │       └── sqs/
 │           └── Reusable SQS plus DLQ module
-├── k8s/
-│   └── platform/base/
-│       └── Kubernetes namespaces and guardrails
 ├── PROJECT_MASTER_PLAN.md
 ├── PROJECT_STATUS.md
 └── AGENTS.md
@@ -148,4 +142,3 @@ Start with:
 - [IAM And GitHub OIDC Deep Dive](docs/09-iam-oidc-deep-dive.md)
 - [EKS Foundation Deep Dive](docs/10-eks-foundation-deep-dive.md)
 - [EKS Add-Ons And Troubleshooting](docs/11-eks-addons-troubleshooting.md)
-- [Kubernetes Platform Guardrails](docs/12-kubernetes-platform-guardrails.md)
