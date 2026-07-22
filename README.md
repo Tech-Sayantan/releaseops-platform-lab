@@ -5,9 +5,10 @@ an AWS EKS-based release-management system with Terraform, RDS PostgreSQL,
 Java/Spring Boot services, Docker, Helm, GitHub Actions, Argo CD, GitOps,
 observability, autoscaling, troubleshooting drills, and a verified teardown.
 
-This repository currently contains the Terraform backend bootstrap, the dev
-environment root module, the custom networking module, and detailed study notes
-for everything built so far.
+This repository now contains the built AWS/EKS foundation plus reference
+application, Helm, GitOps, CI/CD, Python automation, troubleshooting, and
+interview-prep notes. The final stretch is optimized for study and discussion,
+not for spending the last prep days hand-coding CRUD.
 
 ## Current Build State
 
@@ -56,15 +57,23 @@ Completed:
 - Dedicated EKS Pod Identity role and association for the EBS CSI controller.
 - Kubernetes platform guardrails applied for namespaces, service accounts,
   ResourceQuota, and LimitRange.
+- Application architecture reference for four Java/Spring Boot services.
+- Reusable Dockerfile reference for Spring Boot image builds.
+- Reusable Helm chart with Deployment, Service, HPA, PDB, NetworkPolicy,
+  probes, resources, and pod security controls.
+- GitOps reference with Argo CD AppProject and ApplicationSet.
+- GitHub Actions reference workflows for infrastructure PR checks, application
+  CI, and GitOps validation.
+- Python helper scripts for EKS health reporting, Terraform plan guarding, and
+  interview drill practice.
+- NatWest-focused interview prep notes, scenario drills, Python angles, and
+  cleanup runbook.
 
-Not started yet:
+Not live-deployed yet:
 
-- Java services
-- Docker images
-- Helm charts
-- GitHub Actions pipelines
-- Argo CD GitOps
-- Observability and autoscaling drills
+- Full Java business implementation.
+- Live Argo CD deployment of the reference applications.
+- Full observability stack rollout.
 
 ## Repository Layout
 
@@ -85,7 +94,24 @@ Not started yet:
 │   ├── 09-iam-oidc-deep-dive.md
 │   ├── 10-eks-foundation-deep-dive.md
 │   ├── 11-eks-addons-troubleshooting.md
-│   └── 12-kubernetes-platform-guardrails.md
+│   ├── 12-kubernetes-platform-guardrails.md
+│   ├── 13-natwest-interview-prep-index.md
+│   ├── 14-helm-gitops-cicd-deep-dive.md
+│   ├── 15-scenario-drills-and-gotchas.md
+│   ├── 16-python-devops-angles.md
+│   ├── 17-final-command-walkthrough.md
+│   ├── 18-cleanup-runbook.md
+│   └── 19-sunday-night-revision-sheet.md
+├── app/
+│   └── Application architecture and Docker reference
+├── charts/
+│   └── Reusable Helm chart for ReleaseOps services
+├── gitops/
+│   └── Argo CD and environment values reference
+├── scripts/
+│   └── Python DevOps helper scripts
+├── .github/
+│   └── GitHub Actions reference workflows
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -134,7 +160,14 @@ down by the target date in `PROJECT_MASTER_PLAN.md`.
 
 ## Learning Notes
 
-Start with:
+For interview prep, start with:
+
+- [NatWest Interview Prep Index](docs/13-natwest-interview-prep-index.md)
+- [Sunday Night Revision Sheet](docs/19-sunday-night-revision-sheet.md)
+- [Scenario Drills And Gotchas](docs/15-scenario-drills-and-gotchas.md)
+- [Final Command Walkthrough](docs/17-final-command-walkthrough.md)
+
+For build-by-build understanding, continue with:
 
 - [How To Use These Notes](docs/00-how-to-use-these-notes.md)
 - [Current Progress](docs/01-current-progress.md)
@@ -149,3 +182,8 @@ Start with:
 - [EKS Foundation Deep Dive](docs/10-eks-foundation-deep-dive.md)
 - [EKS Add-Ons And Troubleshooting](docs/11-eks-addons-troubleshooting.md)
 - [Kubernetes Platform Guardrails](docs/12-kubernetes-platform-guardrails.md)
+- [Helm, GitOps, And CI/CD Deep Dive](docs/14-helm-gitops-cicd-deep-dive.md)
+- [Python For DevOps Angles](docs/16-python-devops-angles.md)
+- [Cleanup Runbook](docs/18-cleanup-runbook.md)
+- [Terraform And EKS Interview Map](docs/20-terraform-eks-interview-map.md)
+- [Observability And Autoscaling Reference](docs/21-observability-autoscaling-reference.md)

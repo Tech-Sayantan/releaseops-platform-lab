@@ -1,0 +1,16 @@
+fullnameOverride: deployment-worker
+serviceAccount:
+  name: worker
+image:
+  repository: 923988301700.dkr.ecr.us-east-1.amazonaws.com/releaseops-dev/worker
+  tag: placeholder
+env:
+  SPRING_PROFILES_ACTIVE: dev
+  SERVICE_NAME: deployment-worker
+  DEPLOYMENT_QUEUE_NAME: releaseops-dev-deployment-events
+  AWS_REGION: us-east-1
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70

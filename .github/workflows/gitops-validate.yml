@@ -1,0 +1,24 @@
+name: GitOps Validation
+
+on:
+  pull_request:
+    paths:
+      - "charts/**"
+      - "gitops/**"
+      - ".github/workflows/gitops-validate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Helm lint
+        run: helm lint charts/releaseops-service
+      - name: Render release-service
+        run: helm template release-service charts/releaseops-service -f gitops/environments/dev/services/release-service-values.yaml
+      - name: Render worker
+        run: helm template deployment-worker charts/releaseops-service -f gitops/environments/dev/services/worker-values.yaml

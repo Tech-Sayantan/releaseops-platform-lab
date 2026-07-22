@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: releaseops-services
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: release-service
+            valuesFile: gitops/environments/dev/services/release-service-values.yaml
+          - name: deployment-worker
+            valuesFile: gitops/environments/dev/services/worker-values.yaml
+  template:
+    metadata:
+      name: "{{name}}"
+    spec:
+      project: releaseops
+      source:
+        repoURL: https://github.com/Tech-Sayantan/releaseops-platform-lab.git
+        targetRevision: main
+        path: charts/releaseops-service
+        helm:
+          valueFiles:
+            - "../../{{valuesFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: releaseops
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false

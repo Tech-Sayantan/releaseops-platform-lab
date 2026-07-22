@@ -1,0 +1,39 @@
+name: Infra PR Validation
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-pr.yml"
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/envs/dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+      - name: Terraform init
+        run: terraform init -input=false
+      - name: Terraform validate
+        run: terraform validate
+      - name: Terraform plan
+        run: terraform plan -input=false -no-color -out=tfplan
+      - name: Convert plan to JSON
+        run: terraform show -json tfplan > tfplan.json
+      - name: Guard dangerous plan actions
+        run: python ../../../scripts/terraform_plan_guard.py tfplan.json

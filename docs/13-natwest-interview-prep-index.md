@@ -1,0 +1,103 @@
+# NatWest Interview Prep Index
+
+This file is the Sunday-night revision map. Read it when you do not want to
+wander through the repo randomly.
+
+## One-Minute Project Story
+
+ReleaseOps is a production-shaped release-management platform on AWS.
+
+The infrastructure is managed by Terraform. The application platform runs on
+EKS. Application data lives in private RDS PostgreSQL, container images live in
+ECR, async deployment work flows through SQS and a DLQ, and GitHub Actions uses
+OIDC to access AWS without long-lived keys. Kubernetes guardrails include
+namespaces, service accounts, quotas, limits, Helm packaging, NetworkPolicy,
+PDBs, HPA, and Argo CD GitOps references.
+
+Say it like this:
+
+> I built a compact EKS platform that mirrors a real enterprise delivery
+> workflow. Terraform provisions AWS primitives such as VPC, private subnets,
+> RDS, ECR, SQS, IAM OIDC, and EKS. Kubernetes runs the application layer with
+> least-privilege service accounts, resource controls, Helm packaging, and
+> GitOps delivery. I also documented operational troubleshooting, cost controls,
+> and cleanup because production DevOps is not just provisioning; it is keeping
+> systems secure, recoverable, observable, and affordable.
+
+## What To Study First
+
+1. `PROJECT_STATUS.md`
+   Read this first so you know what was actually built.
+
+2. `docs/10-eks-foundation-deep-dive.md`
+   This is your EKS base: control plane, worker nodes, networking, IAM roles,
+   add-ons, and the exact lab design.
+
+3. `docs/11-eks-addons-troubleshooting.md`
+   This is gold for interviews because it contains a real failed add-on
+   troubleshooting story.
+
+4. `docs/14-helm-gitops-cicd-deep-dive.md`
+   This explains the new reference Helm, Argo CD, and GitHub Actions layer.
+
+5. `docs/15-scenario-drills-and-gotchas.md`
+   Read this like mock interview flashcards.
+
+6. `docs/16-python-devops-angles.md`
+   Use this to answer "where did you use scripting?" confidently.
+
+7. `docs/17-final-command-walkthrough.md`
+   This is the minimum command set to revise before the interview.
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+  Dev["Developer / Pull Request"] --> GHA["GitHub Actions"]
+  GHA --> OIDC["AWS IAM OIDC Role"]
+  OIDC --> TF["Terraform Plan / Apply"]
+  TF --> VPC["VPC: public, private, database subnets"]
+  TF --> EKS["EKS Cluster + Managed Node Group"]
+  TF --> RDS["Private RDS PostgreSQL"]
+  TF --> ECR["ECR Repositories"]
+  TF --> SQS["SQS Queue + DLQ"]
+  TF --> KMS["KMS + Secrets Manager"]
+
+  Dev --> AppCI["App CI: Maven, Docker, Scan"]
+  AppCI --> ECR
+  AppCI --> GitOps["GitOps Values Update"]
+  GitOps --> Argo["Argo CD"]
+  Argo --> EKS
+
+  EKS --> Pods["ReleaseOps Services"]
+  Pods --> RDS
+  Pods --> SQS
+```
+
+## Interview Positioning
+
+For a banking/client interview, do not present this as "I made a cluster."
+Present it as "I designed a controlled delivery platform."
+
+Stress these themes:
+
+- least privilege IAM instead of static AWS keys
+- private database access instead of public RDS
+- separated Terraform and GitOps ownership
+- deterministic CI checks before apply/deploy
+- cost awareness and teardown discipline
+- failure drills and operational runbooks
+- audit-friendly changes through PRs
+
+## What Not To Overclaim
+
+Be honest and crisp:
+
+- The Java services are reference architecture, not a full business product.
+- The Helm/GitOps layer is a reference implementation for interview prep.
+- The AWS infra was built hands-on up to EKS, add-ons, RDS, ECR, SQS, OIDC, and
+  platform guardrails.
+- Observability is designed and documented; full Prometheus/Grafana rollout can
+  be a next improvement if time allows.
+
+This honesty makes the story stronger, not weaker.

@@ -1,0 +1,15 @@
+fullnameOverride: release-service
+serviceAccount:
+  name: api
+image:
+  repository: 923988301700.dkr.ecr.us-east-1.amazonaws.com/releaseops-dev/api
+  tag: placeholder
+env:
+  SPRING_PROFILES_ACTIVE: dev
+  SERVICE_NAME: release-service
+  DATABASE_HOST: releaseops-dev-postgres.cujgu0meoiuj.us-east-1.rds.amazonaws.com
+  DATABASE_NAME: releaseops
+secretEnv:
+  - name: DATABASE_PASSWORD
+    secretName: releaseops-db
+    secretKey: password

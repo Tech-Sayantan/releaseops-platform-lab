@@ -1,6 +1,6 @@
 # ReleaseOps Platform Lab - Status
 
-Last updated: 2026-07-21
+Last updated: 2026-07-22
 Master plan: `PROJECT_MASTER_PLAN.md`  
 Target teardown complete: 2026-07-26
 
@@ -68,6 +68,22 @@ Completed:
 - Terraform plan verified clean after the timeout recovery.
 - Kubernetes platform guardrails applied and verified: namespaces, service
   accounts, ResourceQuota, and LimitRange.
+- Application reference architecture added for four Java/Spring Boot services:
+  release, approval, deployment worker, and incident/audit.
+- Dockerfile reference added for production-shaped Spring Boot image builds.
+- Reusable Helm chart added with Deployment, Service, HPA, PDB, NetworkPolicy,
+  probes, resources, and pod security controls.
+- GitOps reference added with Argo CD AppProject, ApplicationSet, and dev
+  values files.
+- GitHub Actions reference workflows added for Terraform PR validation,
+  application CI, and GitOps validation.
+- Python helper scripts added for EKS health reporting, Terraform plan guarding,
+  and interview drill practice.
+- Interview-prep documentation added for architecture, CI/CD, Helm, GitOps,
+  Python scripting, scenario drills, troubleshooting, command walkthrough, and
+  cleanup.
+- Final revision notes added for Terraform/EKS concepts, observability, and
+  autoscaling.
 
 Observed identifiers from the latest verified terminal output:
 
@@ -102,16 +118,12 @@ Observed identifiers from the latest verified terminal output:
 
 Do not treat these IDs as permanent. Verify live state before using them.
 
-Not started:
+Not live-deployed yet:
 
-- Terraform state-address refactor exercise
-- Java application
-- Docker images
-- Helm and GitOps repository
-- GitHub Actions pipelines
 - Argo CD applications
-- observability
-- autoscaling and failure drills
+- full Java service implementation
+- full observability stack
+- external ingress and domain wiring
 
 ## Exact Next Step
 
@@ -121,15 +133,16 @@ Resume inside:
 /Users/sayantanchowdhury/Documents/Codex/releaseops-platform-lab
 ```
 
-Continue after **EKS Managed Add-Ons**:
+For interview prep mode:
 
-1. Confirm `terraform plan` still shows no changes.
-2. Continue with RBAC and first app-facing permissions.
-3. Add storage smoke test later only if needed, because PVCs can create EBS
-   volumes and increase cost.
-4. Continue toward application manifests, Helm, and GitOps.
+1. Read `docs/13-natwest-interview-prep-index.md`.
+2. Read `docs/19-sunday-night-revision-sheet.md`.
+3. Walk the code in `infra/`, `charts/`, `gitops/`, `.github/`, and `scripts/`.
+4. Practice the scenarios in `docs/15-scenario-drills-and-gotchas.md`.
+5. Tear down the paid AWS resources using `docs/18-cleanup-runbook.md` when the
+   study/demo window is complete.
 
-The guide must deliver this one small type-along block at a time.
+Follow-along mode is paused. The repository is now a study/reference project.
 
 ## Immediate Verification Commands
 
@@ -180,4 +193,5 @@ and RDS idle for days. Continue the lab or tear it down by the target date.
 
 ## Change Log
 
-No changes to the locked plan.
+- 2026-07-22: Added interview-ready reference layer: app architecture, Docker,
+  Helm, GitOps, CI/CD workflows, Python helper scripts, and deep prep notes.

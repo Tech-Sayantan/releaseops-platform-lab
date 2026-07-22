@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: releaseops
+  namespace: argocd
+spec:
+  description: ReleaseOps lab applications
+  sourceRepos:
+    - https://github.com/Tech-Sayantan/releaseops-platform-lab.git
+  destinations:
+    - namespace: releaseops
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

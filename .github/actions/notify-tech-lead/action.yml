@@ -1,0 +1,18 @@
+name: Notify tech lead
+description: Reference composite action for review or approval notifications
+inputs:
+  change-summary:
+    description: Human-readable summary of the change
+    required: true
+  recipient:
+    description: Team or lead alias
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Print notification payload
+      shell: bash
+      run: |
+        echo "Notification target: ${{ inputs.recipient }}"
+        echo "Change summary: ${{ inputs.change-summary }}"
+        echo "In production this would call Slack, Teams, email, or ITSM."
