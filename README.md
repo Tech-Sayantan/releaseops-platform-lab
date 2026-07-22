@@ -66,7 +66,7 @@ Completed:
   CI, and GitOps validation.
 - Python helper scripts for EKS health reporting, Terraform plan guarding, and
   interview drill practice.
-- NatWest-focused interview prep notes, scenario drills, Python angles, and
+- Client-interview prep notes, scenario drills, Python angles, and
   cleanup runbook.
 
 Not live-deployed yet:
@@ -95,7 +95,7 @@ Not live-deployed yet:
 │   ├── 10-eks-foundation-deep-dive.md
 │   ├── 11-eks-addons-troubleshooting.md
 │   ├── 12-kubernetes-platform-guardrails.md
-│   ├── 13-natwest-interview-prep-index.md
+│   ├── 13-client-interview-prep-index.md
 │   ├── 14-helm-gitops-cicd-deep-dive.md
 │   ├── 15-scenario-drills-and-gotchas.md
 │   ├── 16-python-devops-angles.md
@@ -162,7 +162,7 @@ down by the target date in `PROJECT_MASTER_PLAN.md`.
 
 For interview prep, start with:
 
-- [NatWest Interview Prep Index](docs/13-natwest-interview-prep-index.md)
+- [Client Interview Prep Index](docs/13-client-interview-prep-index.md)
 - [Sunday Night Revision Sheet](docs/19-sunday-night-revision-sheet.md)
 - [Scenario Drills And Gotchas](docs/15-scenario-drills-and-gotchas.md)
 - [Final Command Walkthrough](docs/17-final-command-walkthrough.md)

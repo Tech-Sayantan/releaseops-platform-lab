@@ -248,7 +248,7 @@ Best practice:
 - Do not mix Terraform ownership and Argo CD ownership for the same object.
 - Do not auto-prune in a learning lab unless you understand the blast radius.
 
-## NatWest-Style Angle
+## Banking Client Angle
 
 For a banking client, speak in controls:
 

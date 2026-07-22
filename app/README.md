@@ -50,7 +50,7 @@ services/
   incident-service/
 ```
 
-For the NatWest interview, the main thing is to explain the architecture,
+For the client interview, the main thing is to explain the architecture,
 pipeline, and production behavior, not to spend the final prep days coding CRUD.
 
 ## Speakable Interview Story
@@ -61,4 +61,3 @@ pipeline, and production behavior, not to spend the final prep days coding CRUD.
 > for GitOps delivery. The point was not only to deploy a service, but to show
 > how infra, app delivery, observability, security, and troubleshooting fit
 > together.
-

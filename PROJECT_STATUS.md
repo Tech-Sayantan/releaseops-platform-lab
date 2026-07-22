@@ -135,7 +135,7 @@ Resume inside:
 
 For interview prep mode:
 
-1. Read `docs/13-natwest-interview-prep-index.md`.
+1. Read `docs/13-client-interview-prep-index.md`.
 2. Read `docs/19-sunday-night-revision-sheet.md`.
 3. Walk the code in `infra/`, `charts/`, `gitops/`, `.github/`, and `scripts/`.
 4. Practice the scenarios in `docs/15-scenario-drills-and-gotchas.md`.

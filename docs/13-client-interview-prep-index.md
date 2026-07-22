@@ -1,4 +1,4 @@
-# NatWest Interview Prep Index
+# Client Interview Prep Index
 
 This file is the Sunday-night revision map. Read it when you do not want to
 wander through the repo randomly.
