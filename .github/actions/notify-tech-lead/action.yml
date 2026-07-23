@@ -1,5 +1,5 @@
-name: Notify tech lead
-description: Reference composite action for review or approval notifications
+name: Record review notification
+description: Create an audit-friendly review notice without pretending it is an approval gate
 inputs:
   change-summary:
     description: Human-readable summary of the change
@@ -7,12 +7,38 @@ inputs:
   recipient:
     description: Team or lead alias
     required: true
+outputs:
+  notice-id:
+    description: Identifier that can be correlated with a delivery integration
+    value: ${{ steps.notice.outputs.notice-id }}
+  delivery-status:
+    description: This reference records a notice but does not deliver externally
+    value: ${{ steps.notice.outputs.delivery-status }}
 runs:
   using: composite
   steps:
-    - name: Print notification payload
+    - name: Record review notice
+      id: notice
       shell: bash
+      env:
+        RECIPIENT: ${{ inputs.recipient }}
+        CHANGE_SUMMARY: ${{ inputs.change-summary }}
       run: |
-        echo "Notification target: ${{ inputs.recipient }}"
-        echo "Change summary: ${{ inputs.change-summary }}"
-        echo "In production this would call Slack, Teams, email, or ITSM."
+        set -euo pipefail
+
+        notice_id="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+        {
+          echo "notice-id=${notice_id}"
+          echo "delivery-status=not-sent"
+        } >> "${GITHUB_OUTPUT}"
+
+        {
+          echo "### Review notification record"
+          echo
+          echo "- Notice ID: \`${notice_id}\`"
+          echo "- Target: \`${RECIPIENT}\`"
+          echo "- Summary: ${CHANGE_SUMMARY}"
+          echo
+          echo "This reference records intent only. A protected environment or"
+          echo "protected branch must enforce approval."
+        } >> "${GITHUB_STEP_SUMMARY}"

@@ -26,27 +26,40 @@ Say it like this:
 
 ## What To Study First
 
-1. `PROJECT_STATUS.md`
-   Read this first so you know what was actually built.
+1. `docs/24-cicd-release-gitops-deep-dive.md`
+   Start here now that the Kubernetes core pass is complete. It explains CI,
+   release integrity, GitHub Actions, Jenkins, Shared Libraries, GitOps, Argo
+   CD, approval, rollback, and database-safe delivery from zero.
 
-2. `docs/10-eks-foundation-deep-dive.md`
-   This is your EKS base: control plane, worker nodes, networking, IAM roles,
-   add-ons, and the exact lab design.
+2. `docs/25-cicd-troubleshooting-playbook.md`
+   Use the symptom-driven pipeline and deployment scenarios immediately after
+   each CI/CD section.
 
-3. `docs/11-eks-addons-troubleshooting.md`
-   This is gold for interviews because it contains a real failed add-on
-   troubleshooting story.
+3. `PROJECT_STATUS.md`
+   Read this so you know what was actually applied and what is reference-only.
 
 4. `docs/14-helm-gitops-cicd-deep-dive.md`
-   This explains the new reference Helm, Argo CD, and GitHub Actions layer.
+   Connect CI/CD to the actual chart and Argo CD files in this repository.
 
-5. `docs/15-scenario-drills-and-gotchas.md`
+5. `docs/22-kubernetes-core-deep-dive.md`
+   Revisit vendor-neutral Kubernetes after the CI/CD pass.
+
+6. `docs/23-kubernetes-troubleshooting-playbook.md`
+   Revisit the Kubernetes symptom-driven scenarios.
+
+7. `docs/10-eks-foundation-deep-dive.md`
+   Read this later if the role specifically requires managed Kubernetes or EKS.
+
+8. `docs/11-eks-addons-troubleshooting.md`
+   This contains the real failed add-on troubleshooting story.
+
+9. `docs/15-scenario-drills-and-gotchas.md`
    Read this like mock interview flashcards.
 
-6. `docs/16-python-devops-angles.md`
+10. `docs/16-python-devops-angles.md`
    Use this to answer "where did you use scripting?" confidently.
 
-7. `docs/17-final-command-walkthrough.md`
+11. `docs/17-final-command-walkthrough.md`
    This is the minimum command set to revise before the interview.
 
 ## Architecture Diagram
@@ -95,6 +108,9 @@ Be honest and crisp:
 
 - The Java services are reference architecture, not a full business product.
 - The Helm/GitOps layer is a reference implementation for interview prep.
+- The GitHub Actions reusable workflows and Jenkins Shared Library are
+  locally reviewed reference implementations; they were not run against a
+  complete application repository or live Jenkins controller.
 - The AWS infra was built hands-on up to EKS, add-ons, RDS, ECR, SQS, OIDC, and
   platform guardrails.
 - Observability is designed and documented; full Prometheus/Grafana rollout can

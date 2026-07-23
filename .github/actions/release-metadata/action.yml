@@ -1,0 +1,78 @@
+name: Generate release metadata
+description: Build and validate one immutable container image identity.
+
+inputs:
+  service-name:
+    description: Lowercase service name used in the image tag.
+    required: true
+  registry:
+    description: Registry hostname, for example 123456789012.dkr.ecr.us-east-1.amazonaws.com.
+    required: true
+  repository:
+    description: Repository path inside the registry.
+    required: true
+  commit-sha:
+    description: Full Git commit SHA that produced the artifact.
+    required: true
+
+outputs:
+  short-sha:
+    description: First 12 characters of the Git commit SHA.
+    value: ${{ steps.metadata.outputs.short-sha }}
+  image-tag:
+    description: Human-readable immutable image tag.
+    value: ${{ steps.metadata.outputs.image-tag }}
+  image-uri:
+    description: Complete registry/repository:tag image URI.
+    value: ${{ steps.metadata.outputs.image-uri }}
+
+runs:
+  using: composite
+  steps:
+    - name: Validate inputs and calculate image identity
+      id: metadata
+      shell: bash
+      env:
+        SERVICE_NAME: ${{ inputs.service-name }}
+        REGISTRY: ${{ inputs.registry }}
+        REPOSITORY: ${{ inputs.repository }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+      run: |
+        set -euo pipefail
+
+        if [[ ! "${SERVICE_NAME}" =~ ^[a-z0-9][a-z0-9-]{0,62}$ ]]; then
+          echo "::error::service-name must contain lowercase letters, numbers, or hyphens"
+          exit 1
+        fi
+
+        if [[ ! "${COMMIT_SHA}" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+          echo "::error::commit-sha must be a 7 to 40 character hexadecimal Git SHA"
+          exit 1
+        fi
+
+        registry="${REGISTRY%/}"
+        repository="${REPOSITORY#/}"
+        short_sha="${COMMIT_SHA:0:12}"
+        image_tag="${SERVICE_NAME}-${short_sha}"
+        image_uri="${registry}/${repository}:${image_tag}"
+
+        {
+          echo "short-sha=${short_sha}"
+          echo "image-tag=${image_tag}"
+          echo "image-uri=${image_uri}"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: Write release metadata summary
+      shell: bash
+      env:
+        IMAGE_URI: ${{ steps.metadata.outputs.image-uri }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+      run: |
+        {
+          echo "### Release metadata"
+          echo
+          echo "- Image: \`${IMAGE_URI}\`"
+          echo "- Source commit: \`${COMMIT_SHA}\`"
+          echo
+          echo "The registry digest returned after push is the final promotion identity."
+        } >> "${GITHUB_STEP_SUMMARY}"

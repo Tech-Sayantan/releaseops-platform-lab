@@ -2,6 +2,13 @@ nameOverride: ""
 fullnameOverride: ""
 
 replicaCount: 2
+revisionHistoryLimit: 5
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
 
 image:
   repository: ""
@@ -12,11 +19,24 @@ image:
 serviceAccount:
   create: false
   name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+imagePullSecrets: []
+
+podAnnotations: {}
+podLabels: {}
 
 service:
+  enabled: true
   type: ClusterIP
   port: 8080
   targetPort: 8080
+
+# These values are rendered into a ConfigMap when configMap.enabled is true.
+# Keep passwords, tokens, and private keys out of this map.
+configMap:
+  enabled: true
 
 env:
   SPRING_PROFILES_ACTIVE: dev
@@ -33,9 +53,14 @@ resources:
     memory: 512Mi
 
 probes:
+  startup:
+    enabled: true
+    path: /actuator/health/liveness
+    failureThreshold: 30
+    periodSeconds: 5
   liveness:
     path: /actuator/health/liveness
-    initialDelaySeconds: 45
+    initialDelaySeconds: 0
     periodSeconds: 10
   readiness:
     path: /actuator/health/readiness
@@ -55,20 +80,82 @@ securityContext:
     drop:
       - ALL
 
+terminationGracePeriodSeconds: 30
+lifecycle: {}
+
 autoscaling:
   enabled: true
   minReplicas: 2
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
 
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
+  maxUnavailable: null
 
 networkPolicy:
   enabled: true
-  ingressFromNamespaceLabels:
-    kubernetes.io/metadata.name: ingress-nginx
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts: []
+  tls: []
+
+# Disabled by default because most application Pods do not need Kubernetes API
+# access. Enable only for a workload with a proven API requirement.
+rbac:
+  enabled: false
+  rules: []
+
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: ScheduleAnyway
+
+podAntiAffinity:
+  enabled: true
+  topologyKey: kubernetes.io/hostname
+
+nodeSelector: {}
+tolerations: []
 
 extraVolumes:
   - name: tmp

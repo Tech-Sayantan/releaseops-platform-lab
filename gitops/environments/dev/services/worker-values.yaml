@@ -1,6 +1,7 @@
 fullnameOverride: deployment-worker
 serviceAccount:
   name: worker
+  automountServiceAccountToken: true
 image:
   repository: 923988301700.dkr.ecr.us-east-1.amazonaws.com/releaseops-dev/worker
   tag: placeholder
@@ -9,8 +10,42 @@ env:
   SERVICE_NAME: deployment-worker
   DEPLOYMENT_QUEUE_NAME: releaseops-dev-deployment-events
   AWS_REGION: us-east-1
+service:
+  enabled: false
 autoscaling:
   enabled: true
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
+podDisruptionBudget:
+  enabled: true
+  minAvailable: null
+  maxUnavailable: 1
+networkPolicy:
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: releaseops
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

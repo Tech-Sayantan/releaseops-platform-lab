@@ -1,4 +1,4 @@
-name: Infra PR Validation
+name: Infra PR Static Validation
 
 on:
   pull_request:
@@ -8,32 +8,39 @@ on:
 
 permissions:
   contents: read
-  id-token: write
-  pull-requests: read
+
+concurrency:
+  group: terraform-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  terraform:
+  terraform-static:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      TF_IN_AUTOMATION: "true"
     defaults:
       run:
         working-directory: infra/envs/dev
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
-      - name: Configure AWS credentials with OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
-          aws-region: us-east-1
       - name: Terraform fmt
         run: terraform fmt -check -recursive
-      - name: Terraform init
-        run: terraform init -input=false
+      - name: Initialize providers and modules without the remote backend
+        run: terraform init -backend=false -input=false
       - name: Terraform validate
-        run: terraform validate
-      - name: Terraform plan
-        run: terraform plan -input=false -no-color -out=tfplan
-      - name: Convert plan to JSON
-        run: terraform show -json tfplan > tfplan.json
-      - name: Guard dangerous plan actions
-        run: python ../../../scripts/terraform_plan_guard.py tfplan.json
+        run: terraform validate -no-color
+      - name: Explain the trust boundary
+        run: |
+          {
+            echo "### Terraform PR validation"
+            echo
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Environment root: \`infra/envs/dev\`"
+            echo
+            echo "This untrusted PR job does not receive AWS credentials."
+            echo "Use the trusted plan workflow after review."
+          } >> "${GITHUB_STEP_SUMMARY}"

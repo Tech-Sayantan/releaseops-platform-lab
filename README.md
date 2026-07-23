@@ -59,13 +59,20 @@ Completed:
   ResourceQuota, and LimitRange.
 - Application architecture reference for four Java/Spring Boot services.
 - Reusable Dockerfile reference for Spring Boot image builds.
-- Reusable Helm chart with Deployment, Service, HPA, PDB, NetworkPolicy,
-  probes, resources, and pod security controls.
+- Reusable Helm chart with ConfigMap, Deployment, Service, HPA, PDB,
+  NetworkPolicy, optional Ingress/RBAC, three probe types, safe rollout behavior,
+  resource controls, topology spreading, and pod security controls.
+- Kubernetes interview reference manifests for Job, CronJob, StatefulSet,
+  StorageClass/PVC behavior, DaemonSet, Pod Security Admission, default-deny
+  networking, and namespace-scoped support RBAC.
 - GitOps reference with Argo CD AppProject and ApplicationSet.
-- GitHub Actions reference workflows for infrastructure PR checks, application
-  CI, and GitOps validation.
+- GitHub Actions reference workflows for infrastructure PR checks, reusable
+  Java CI, immutable image publication, GitOps promotion, and Helm validation.
+- Reusable GitHub composite action for validated release metadata.
+- Jenkins Declarative Pipeline and Shared Library references for the same
+  build-once and GitOps-promotion model.
 - Python helper scripts for EKS health reporting, Terraform plan guarding, and
-  interview drill practice.
+  interview drill practice, plus structured GitOps image updates.
 - Client-interview prep notes, scenario drills, Python angles, and
   cleanup runbook.
 
@@ -101,7 +108,13 @@ Not live-deployed yet:
 │   ├── 16-python-devops-angles.md
 │   ├── 17-final-command-walkthrough.md
 │   ├── 18-cleanup-runbook.md
-│   └── 19-sunday-night-revision-sheet.md
+│   ├── 19-sunday-night-revision-sheet.md
+│   ├── 20-terraform-eks-interview-map.md
+│   ├── 21-observability-autoscaling-reference.md
+│   ├── 22-kubernetes-core-deep-dive.md
+│   ├── 23-kubernetes-troubleshooting-playbook.md
+│   ├── 24-cicd-release-gitops-deep-dive.md
+│   └── 25-cicd-troubleshooting-playbook.md
 ├── app/
 │   └── Application architecture and Docker reference
 ├── charts/
@@ -111,7 +124,9 @@ Not live-deployed yet:
 ├── scripts/
 │   └── Python DevOps helper scripts
 ├── .github/
-│   └── GitHub Actions reference workflows
+│   └── GitHub Actions, reusable workflows, and composite actions
+├── jenkins/
+│   └── Jenkinsfile and Shared Library reference
 ├── infra/
 │   ├── envs/dev/
 │   │   └── Dev environment root module
@@ -129,8 +144,10 @@ Not live-deployed yet:
 │       └── sqs/
 │           └── Reusable SQS plus DLQ module
 ├── k8s/
-│   └── platform/base/
-│       └── Kubernetes platform guardrails
+│   ├── platform/base/
+│   │   └── Kubernetes platform guardrails
+│   └── interview-reference/
+│       └── Non-applied Job, CronJob, StatefulSet, storage, and DaemonSet examples
 ├── PROJECT_MASTER_PLAN.md
 ├── PROJECT_STATUS.md
 └── AGENTS.md
@@ -166,6 +183,10 @@ For interview prep, start with:
 - [Sunday Night Revision Sheet](docs/19-sunday-night-revision-sheet.md)
 - [Scenario Drills And Gotchas](docs/15-scenario-drills-and-gotchas.md)
 - [Final Command Walkthrough](docs/17-final-command-walkthrough.md)
+- [Kubernetes Core Concepts Deep Dive](docs/22-kubernetes-core-deep-dive.md)
+- [Kubernetes Troubleshooting Playbook](docs/23-kubernetes-troubleshooting-playbook.md)
+- [Production CI/CD, Release, And GitOps Deep Dive](docs/24-cicd-release-gitops-deep-dive.md)
+- [CI/CD And GitOps Troubleshooting Playbook](docs/25-cicd-troubleshooting-playbook.md)
 
 For build-by-build understanding, continue with:
 
@@ -183,6 +204,8 @@ For build-by-build understanding, continue with:
 - [EKS Add-Ons And Troubleshooting](docs/11-eks-addons-troubleshooting.md)
 - [Kubernetes Platform Guardrails](docs/12-kubernetes-platform-guardrails.md)
 - [Helm, GitOps, And CI/CD Deep Dive](docs/14-helm-gitops-cicd-deep-dive.md)
+- [Production CI/CD, Release, And GitOps Deep Dive](docs/24-cicd-release-gitops-deep-dive.md)
+- [CI/CD And GitOps Troubleshooting Playbook](docs/25-cicd-troubleshooting-playbook.md)
 - [Python For DevOps Angles](docs/16-python-devops-angles.md)
 - [Cleanup Runbook](docs/18-cleanup-runbook.md)
 - [Terraform And EKS Interview Map](docs/20-terraform-eks-interview-map.md)

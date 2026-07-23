@@ -3,6 +3,9 @@
 Use this file as mock interview practice. For each scenario, first answer in
 your own words, then compare with the structure here.
 
+For the full vendor-neutral Kubernetes diagnostic sequence and twenty detailed
+failure scenarios, use `docs/23-kubernetes-troubleshooting-playbook.md`.
+
 ## Scenario 1: Pod Is Pending
 
 Question:

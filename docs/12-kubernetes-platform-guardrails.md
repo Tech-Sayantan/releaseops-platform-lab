@@ -20,6 +20,8 @@ namespaces.yaml
 releaseops-serviceaccounts.yaml
 releaseops-resourcequota.yaml
 releaseops-limitrange.yaml
+releaseops-default-deny.yaml
+releaseops-support-rbac.yaml
 ```
 
 Live objects verified in EKS:
@@ -30,6 +32,10 @@ service accounts: api, worker, notifications, frontend
 ResourceQuota: releaseops-compute-quota
 LimitRange: releaseops-default-container-limits
 ```
+
+The default-deny policy, Pod Security Admission labels, and support RBAC were
+added later as reference code. Verify live state before claiming they were
+applied.
 
 This step does not create new AWS paid resources like LoadBalancers, EBS
 volumes, RDS instances, or EC2 nodes. These are Kubernetes API objects inside
@@ -294,6 +300,66 @@ Interview line:
 > gives safe defaults per container, while ResourceQuota caps total namespace
 > usage.
 
+## Pod Security Admission
+
+The `releaseops` Namespace is labeled with the built-in `restricted` Pod
+Security Standard:
+
+```yaml
+pod-security.kubernetes.io/enforce: restricted
+pod-security.kubernetes.io/audit: restricted
+pod-security.kubernetes.io/warn: restricted
+```
+
+- `enforce` rejects Pods that violate the profile.
+- `audit` records violations in the audit event.
+- `warn` returns a warning to the user.
+
+This is admission-time security. It does not inspect runtime behavior and does
+not replace RBAC, image scanning, NetworkPolicy, or container security controls.
+
+Production gotcha:
+
+Do not switch a busy namespace directly to `enforce` without checking existing
+workloads. Start with audit/warn, correct violations, then enforce through a
+controlled change.
+
+## Default-Deny NetworkPolicy
+
+The platform base defines:
+
+```yaml
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+```
+
+An empty selector chooses every Pod in the namespace. Because there are no
+allow rules in this policy, selected Pods are denied by default in both
+directions. Application charts must add explicit allow policies for DNS,
+ingress, database access, and required external APIs.
+
+NetworkPolicies are additive, so the application allow policy works alongside
+the namespace default deny. The cluster network plugin must support policy
+enforcement; merely creating the API object is not enough.
+
+## Namespace Support RBAC
+
+The support Role permits read-only troubleshooting inside `releaseops`:
+
+```text
+get/list/watch Pods, logs, events, Services, ConfigMaps,
+Deployments, ReplicaSets, and HPAs
+```
+
+The RoleBinding grants that Role to the `releaseops-support` group. The group
+must still be supplied by the cluster's user authentication integration.
+
+This is intentionally namespace-scoped. A support engineer does not need
+cluster-admin merely to inspect one application's Pods and logs.
+
 ## Verification Commands
 
 Render local YAML:
@@ -332,6 +398,15 @@ Check limit range:
 kubectl describe limitrange releaseops-default-container-limits -n releaseops
 ```
 
+Check policy and RBAC:
+
+```bash
+kubectl get networkpolicy,role,rolebinding -n releaseops
+kubectl auth can-i get pods -n releaseops \
+  --as=example-support-user \
+  --as-group=releaseops-support
+```
+
 ## What We Learn From This Step
 
 This step teaches a mature Kubernetes habit:
@@ -350,4 +425,3 @@ Better interview answer:
 > Before deploying the app, I prepare namespaces, service accounts, resource
 > quotas, and limit ranges. Then I add RBAC, NetworkPolicy, app manifests, Helm,
 > and GitOps.
-

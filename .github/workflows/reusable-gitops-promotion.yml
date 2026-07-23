@@ -1,0 +1,122 @@
+name: Reusable GitOps promotion
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: Service being promoted.
+        required: true
+        type: string
+      environment:
+        description: Protected GitHub Environment and GitOps target.
+        required: true
+        type: string
+      values_file:
+        description: Helm values file to update.
+        required: true
+        type: string
+      image_repository:
+        description: Registry and repository without a tag.
+        required: true
+        type: string
+      image_digest:
+        description: Immutable sha256 image digest.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  propose:
+    name: Propose ${{ inputs.environment }} promotion
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: gitops-${{ inputs.environment }}-${{ inputs.service_name }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout GitOps source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements-gitops.txt
+
+      - name: Install the structured YAML parser
+        run: python -m pip install -r scripts/requirements-gitops.txt
+
+      - name: Validate the promotion contract
+        env:
+          SERVICE_NAME: ${{ inputs.service_name }}
+          TARGET_ENVIRONMENT: ${{ inputs.environment }}
+          VALUES_FILE: ${{ inputs.values_file }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${SERVICE_NAME}" =~ ^[a-z0-9][a-z0-9-]{0,62}$ ]]; then
+            echo "::error::service_name contains unsupported characters"
+            exit 1
+          fi
+          if [[ ! "${TARGET_ENVIRONMENT}" =~ ^[a-z0-9][a-z0-9-]{0,30}$ ]]; then
+            echo "::error::environment contains unsupported characters"
+            exit 1
+          fi
+          if [[ "${VALUES_FILE}" == /* || "${VALUES_FILE}" == *".."* ]]; then
+            echo "::error::values_file must be a repository-relative path"
+            exit 1
+          fi
+          if [[ ! -f "${VALUES_FILE}" ]]; then
+            echo "::error::values_file does not exist"
+            exit 1
+          fi
+
+      - name: Update only the requested image identity
+        env:
+          VALUES_FILE: ${{ inputs.values_file }}
+          IMAGE_REPOSITORY: ${{ inputs.image_repository }}
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+        run: |
+          python scripts/update_gitops_image.py \
+            --file "${VALUES_FILE}" \
+            --repository "${IMAGE_REPOSITORY}" \
+            --digest "${IMAGE_DIGEST}"
+
+      - name: Show the reviewable change
+        env:
+          VALUES_FILE: ${{ inputs.values_file }}
+        run: |
+          git diff --check
+          git diff -- "${VALUES_FILE}"
+
+      - name: Open a promotion pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          commit-message: >-
+            chore(gitops): promote ${{ inputs.service_name }} to
+            ${{ inputs.environment }}
+          branch: gitops/${{ inputs.environment }}/${{ inputs.service_name }}-${{ github.run_id }}
+          delete-branch: true
+          title: >-
+            Promote ${{ inputs.service_name }} to ${{ inputs.environment }}
+          body: |
+            Automated GitOps promotion proposal.
+
+            - Service: `${{ inputs.service_name }}`
+            - Environment: `${{ inputs.environment }}`
+            - Repository: `${{ inputs.image_repository }}`
+            - Digest: `${{ inputs.image_digest }}`
+            - Source run: `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+
+            Argo CD reconciles this change only after review and merge.
+          labels: |
+            gitops
+            promotion

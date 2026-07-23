@@ -1,34 +1,37 @@
-name: Application CI Reference
+name: Application CI Caller Reference
 
 on:
-  pull_request:
-    paths:
-      - "app/**"
-      - "charts/**"
-      - ".github/workflows/app-ci-reference.yml"
+  workflow_dispatch:
+    inputs:
+      service_name:
+        description: Service to verify in an application repository layout
+        required: true
+        default: release-service
+        type: string
+      working_directory:
+        description: Directory containing pom.xml and Docker context
+        required: true
+        default: services/release-service
+        type: string
+      dockerfile:
+        description: Dockerfile path relative to repository root
+        required: true
+        default: services/release-service/Dockerfile
+        type: string
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
-  java-ci-reference:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: maven
-      - name: Maven stages
-        run: |
-          echo "Reference stages:"
-          echo "mvn -B clean verify"
-          echo "mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar"
-          echo "docker buildx build --push"
-      - name: Notify tech lead
-        uses: ./.github/actions/notify-tech-lead
-        with:
-          recipient: platform-tech-lead
-          change-summary: Application PR validation completed.
+  ci:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/reusable-java-service-ci.yml
+    with:
+      service_name: ${{ inputs.service_name }}
+      working_directory: ${{ inputs.working_directory }}
+      dockerfile: ${{ inputs.dockerfile }}
+      ecr_repository: releaseops-dev/api
+      java_version: "21"
+      sonar_enabled: false
+      push_image: false

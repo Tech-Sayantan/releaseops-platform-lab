@@ -2,6 +2,13 @@
 
 This note explains the reference delivery layer added for interview prep.
 
+Use this chapter for Helm and repository-specific GitOps details. For the full
+release pipeline, GitHub Actions, Jenkins, Shared Library, security, promotion,
+rollback, and troubleshooting treatment, continue with:
+
+- [Production CI/CD, Release, And GitOps Deep Dive](24-cicd-release-gitops-deep-dive.md)
+- [CI/CD And GitOps Troubleshooting Playbook](25-cicd-troubleshooting-playbook.md)
+
 ## Why Helm Exists Here
 
 Kubernetes YAML gets repetitive very quickly. Four Spring Boot services need
@@ -9,12 +16,16 @@ the same basic shape:
 
 - Deployment
 - Service
+- ConfigMap
 - probes
 - resource requests and limits
 - service account
 - NetworkPolicy
 - HorizontalPodAutoscaler
 - PodDisruptionBudget
+- optional Ingress
+- optional Role and RoleBinding
+- rolling-update controls and topology spreading
 
 Without Helm, you copy-paste those manifests four times and then slowly drift.
 One service gets a probe fix, another service misses it, and production becomes
@@ -35,6 +46,24 @@ Interview phrase:
 > pattern. Service-specific values control image, environment variables, service
 > account, and autoscaling, while the security and reliability defaults stay
 > consistent.
+
+### Important controller-ownership decisions
+
+When HPA is enabled, the chart omits `Deployment.spec.replicas`. HPA owns the
+replica count at runtime. Keeping a fixed replica value in Git can cause the
+GitOps controller and HPA to repeatedly overwrite each other.
+
+The chart also renders non-secret environment values into a ConfigMap and puts a
+checksum of that ConfigMap in the Pod template. A configuration change therefore
+creates a new Deployment revision instead of leaving old Pods with stale
+environment variables.
+
+Ingress and application RBAC are disabled by default:
+
+- Ingress needs a controller and can create a paid cloud load balancer.
+- Most application Pods do not need Kubernetes API permissions.
+
+This is least privilege and cost control expressed in chart defaults.
 
 ## Why GitOps Exists Here
 
@@ -99,18 +128,17 @@ The idea is simple: one reusable Helm chart, multiple service value files.
 
 There are three pipeline lanes.
 
-### 1. Infrastructure PR Pipeline
+### 1. Infrastructure Validation And Plan Pipelines
 
-File: `.github/workflows/infra-pr.yml`
+Files:
 
-Purpose:
+- `.github/workflows/infra-pr.yml`
+- `.github/workflows/infra-plan-reference.yml`
 
-- run `terraform fmt`
-- run `terraform init`
-- run `terraform validate`
-- run `terraform plan`
-- convert the plan to JSON
-- run a Python guard script to block dangerous deletes/replacements
+The PR workflow runs credential-free formatting, initialization without the
+remote backend, and validation. The trusted main-branch workflow can use OIDC
+to access the real backend, save a plan, convert it to JSON, and run the Python
+guard against dangerous deletes or replacements.
 
 Why this matters:
 
@@ -127,22 +155,31 @@ of stateful or foundational resources:
 Interview phrase:
 
 > I do not treat `terraform plan` as decoration. The plan is an approval
-> artifact. For high-risk resources like RDS or EKS, I would require manual
-> approval before apply.
+> artifact. I also do not expose a write-capable AWS role to untrusted PR code.
+> Static PR validation and trusted cloud planning have separate identity
+> boundaries. For high-risk resources like RDS or EKS, I would require manual
+> approval before applying the exact reviewed plan.
 
 ### 2. Application CI Pipeline
 
-File: `.github/workflows/app-ci-reference.yml`
+Files:
 
-Purpose:
+- `.github/workflows/app-ci-reference.yml`
+- `.github/workflows/reusable-java-service-ci.yml`
+- `.github/actions/release-metadata/action.yml`
+
+The small caller invokes the reusable workflow. The reusable implementation can:
 
 - checkout code
 - set up Java
 - run Maven checks
 - run tests
-- run quality/security gates
+- wait for a Sonar quality gate
 - build image
-- push image to ECR
+- use GitHub OIDC for short-lived AWS credentials
+- push an immutable candidate to ECR
+- generate SBOM and provenance
+- scan the candidate and return its digest
 
 This repo includes the reference structure, not the full Java implementation.
 For the interview, your explanation matters:

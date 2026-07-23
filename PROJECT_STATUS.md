@@ -1,10 +1,17 @@
 # ReleaseOps Platform Lab - Status
 
-Last updated: 2026-07-22
+Last updated: 2026-07-24
 Master plan: `PROJECT_MASTER_PLAN.md`  
 Target teardown complete: 2026-07-26
 
 ## Current State
+
+Read-only cluster audit on 2026-07-23:
+
+- `releaseops` had no live Deployment, Pod, Service, HPA, PDB, Ingress, PVC, or
+  Helm release.
+- The four workload ServiceAccounts, ResourceQuota, and LimitRange were present.
+- Application workload YAML remains a locally validated Helm/GitOps reference.
 
 Completed:
 
@@ -71,12 +78,31 @@ Completed:
 - Application reference architecture added for four Java/Spring Boot services:
   release, approval, deployment worker, and incident/audit.
 - Dockerfile reference added for production-shaped Spring Boot image builds.
-- Reusable Helm chart added with Deployment, Service, HPA, PDB, NetworkPolicy,
-  probes, resources, and pod security controls.
+- Reusable Helm chart added and expanded with ConfigMap, Deployment, optional
+  Service and Ingress, three probe types, HPA behavior, PDB, ingress/egress
+  NetworkPolicy, optional RBAC, rollout safety, topology spreading, resources,
+  and pod security controls.
+- Kubernetes interview reference manifests added for migration Job, scheduled
+  CronJob, StatefulSet and persistent storage, DaemonSet, Pod Security Admission,
+  default-deny networking, and namespace-scoped support RBAC.
+- Vendor-neutral Kubernetes core deep dive and symptom-based troubleshooting
+  playbook added. These distinguish applied objects from locally rendered
+  reference objects.
 - GitOps reference added with Argo CD AppProject, ApplicationSet, and dev
   values files.
-- GitHub Actions reference workflows added for Terraform PR validation,
-  application CI, and GitOps validation.
+- GitHub Actions reference workflows added for credential-free Terraform PR
+  validation, trusted main-branch Terraform planning, reusable Java application
+  CI, immutable image publication, structured GitOps promotion, and Helm
+  validation.
+- Composite release-metadata action added to demonstrate reusable custom action
+  design without confusing notification with enforced approval.
+- Jenkins Declarative Pipeline and Shared Library references added for Maven,
+  SonarQube, image build/scan/SBOM, short-lived AWS access, ECR publication,
+  and GitOps promotion.
+- Structured Python GitOps updater added to validate and write an immutable
+  image repository and digest into a Helm values file.
+- Python unit tests added for successful promotion update, idempotent retry,
+  and mutable-tag rejection.
 - Python helper scripts added for EKS health reporting, Terraform plan guarding,
   and interview drill practice.
 - Interview-prep documentation added for architecture, CI/CD, Helm, GitOps,
@@ -124,6 +150,8 @@ Not live-deployed yet:
 - full Java service implementation
 - full observability stack
 - external ingress and domain wiring
+- reference application Deployments, Services, HPAs, PDBs, and NetworkPolicies
+- newly added Pod Security Admission, default-deny policy, and support RBAC changes
 
 ## Exact Next Step
 
@@ -135,14 +163,20 @@ Resume inside:
 
 For interview prep mode:
 
-1. Read `docs/13-client-interview-prep-index.md`.
-2. Read `docs/19-sunday-night-revision-sheet.md`.
-3. Walk the code in `infra/`, `charts/`, `gitops/`, `.github/`, and `scripts/`.
-4. Practice the scenarios in `docs/15-scenario-drills-and-gotchas.md`.
-5. Tear down the paid AWS resources using `docs/18-cleanup-runbook.md` when the
+1. Read `docs/24-cicd-release-gitops-deep-dive.md`.
+2. Read `docs/25-cicd-troubleshooting-playbook.md`.
+3. Walk `.github/`, `jenkins/`, `scripts/update_gitops_image.py`, `gitops/`,
+   and `charts/` beside those chapters.
+4. Return to `docs/13-client-interview-prep-index.md` for the complete map.
+5. Practice the scenarios in `docs/15-scenario-drills-and-gotchas.md`.
+6. Tear down the paid AWS resources using `docs/18-cleanup-runbook.md` when the
    study/demo window is complete.
 
 Follow-along mode is paused. The repository is now a study/reference project.
+For Kubernetes-first study, begin with `docs/22-kubernetes-core-deep-dive.md`
+and then use `docs/23-kubernetes-troubleshooting-playbook.md` after each topic.
+For the current CI/CD pass, use `docs/24-cicd-release-gitops-deep-dive.md` and
+then answer the scenarios in `docs/25-cicd-troubleshooting-playbook.md`.
 
 ## Immediate Verification Commands
 
@@ -195,3 +229,12 @@ and RDS idle for days. Continue the lab or tear it down by the target date.
 
 - 2026-07-22: Added interview-ready reference layer: app architecture, Docker,
   Helm, GitOps, CI/CD workflows, Python helper scripts, and deep prep notes.
+- 2026-07-23: Expanded the Kubernetes study/reference layer with production
+  workload patterns, optional controllers, security guardrails, stateful/batch/
+  node-agent examples, and a detailed troubleshooting playbook. No new live
+  workload or billable cloud resource was created.
+- 2026-07-24: Added the production CI/CD study layer with reusable GitHub
+  Actions workflows, a composite action, Jenkins Shared Library references,
+  digest-based GitOps promotion, a structured Python updater, and a detailed
+  troubleshooting playbook. No workflow was dispatched and no cloud or cluster
+  resource was changed.

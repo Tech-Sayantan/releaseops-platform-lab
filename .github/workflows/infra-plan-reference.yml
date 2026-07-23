@@ -1,0 +1,81 @@
+name: Trusted Terraform Plan Reference
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-dev-plan
+  cancel-in-progress: false
+
+jobs:
+  terraform-plan:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: "true"
+    defaults:
+      run:
+        working-directory: infra/envs/dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Require the Terraform AWS role
+        env:
+          AWS_TERRAFORM_ROLE_ARN: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
+        working-directory: .
+        run: |
+          if [[ -z "${AWS_TERRAFORM_ROLE_ARN}" ]]; then
+            echo "::error::AWS_TERRAFORM_ROLE_ARN is not configured"
+            exit 1
+          fi
+
+      - name: Exchange GitHub OIDC token for short-lived AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_TERRAFORM_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Confirm the AWS caller before planning
+        run: aws sts get-caller-identity
+
+      - name: Terraform format
+        run: terraform fmt -check -recursive
+
+      - name: Initialize the real remote backend
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        run: terraform validate -no-color
+
+      - name: Create a saved plan
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Convert plan to structured JSON
+        run: terraform show -json tfplan > tfplan.json
+
+      - name: Guard dangerous plan actions
+        run: python ../../../scripts/terraform_plan_guard.py tfplan.json
+
+      - name: Summarize the plan identity
+        run: |
+          {
+            echo "### Trusted Terraform plan"
+            echo
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            echo "- Environment root: \`infra/envs/dev\`"
+            echo
+            echo "The plan is intentionally not uploaded because a Terraform"
+            echo "plan can contain sensitive values. A production apply stage"
+            echo "would protect and apply this exact reviewed plan."
+          } >> "${GITHUB_STEP_SUMMARY}"

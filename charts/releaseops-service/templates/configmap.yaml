@@ -1,15 +1,13 @@
-{{- if .Values.service.enabled }}
+{{- if .Values.configMap.enabled }}
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
   name: {{ include "releaseops-service.fullname" . }}
-spec:
-  type: {{ .Values.service.type }}
-  selector:
+  labels:
     app.kubernetes.io/name: {{ include "releaseops-service.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-  ports:
-    - name: http
-      port: {{ .Values.service.port }}
-      targetPort: http
+data:
+  {{- range $name, $value := .Values.env }}
+  {{ $name }}: {{ $value | quote }}
+  {{- end }}
 {{- end }}

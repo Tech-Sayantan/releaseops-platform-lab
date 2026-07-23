@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "releaseops-service.fullname" . }}-ingress
+  name: {{ include "releaseops-service.fullname" . }}-network
 spec:
   podSelector:
     matchLabels:
@@ -10,12 +10,13 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   policyTypes:
     - Ingress
+    {{- if .Values.networkPolicy.egress }}
+    - Egress
+    {{- end }}
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              {{- toYaml .Values.networkPolicy.ingressFromNamespaceLabels | nindent 14 }}
-      ports:
-        - protocol: TCP
-          port: {{ .Values.service.targetPort }}
+    {{- toYaml .Values.networkPolicy.ingress | nindent 4 }}
+  {{- with .Values.networkPolicy.egress }}
+  egress:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}

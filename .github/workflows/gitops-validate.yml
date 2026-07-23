@@ -10,15 +10,55 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: gitops-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   render:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
-      - name: Helm lint
-        run: helm lint charts/releaseops-service
+      - name: Lint chart defaults
+        run: helm lint charts/releaseops-service --strict
+      - name: Lint release-service values
+        run: >-
+          helm lint charts/releaseops-service --strict
+          --values gitops/environments/dev/services/release-service-values.yaml
+      - name: Lint worker values
+        run: >-
+          helm lint charts/releaseops-service --strict
+          --values gitops/environments/dev/services/worker-values.yaml
       - name: Render release-service
-        run: helm template release-service charts/releaseops-service -f gitops/environments/dev/services/release-service-values.yaml
+        run: >-
+          helm template release-service charts/releaseops-service
+          --values gitops/environments/dev/services/release-service-values.yaml
+          --output-dir build/rendered/release-service
       - name: Render worker
-        run: helm template deployment-worker charts/releaseops-service -f gitops/environments/dev/services/worker-values.yaml
+        run: >-
+          helm template deployment-worker charts/releaseops-service
+          --values gitops/environments/dev/services/worker-values.yaml
+          --output-dir build/rendered/deployment-worker
+      - name: Reject malformed rendered YAML
+        run: |
+          python -m pip install -r scripts/requirements-gitops.txt
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          files = sorted(Path("build/rendered").rglob("*.yaml"))
+          if not files:
+              raise SystemExit("Helm did not render any YAML files")
+
+          for path in files:
+              with path.open(encoding="utf-8") as stream:
+                  documents = list(yaml.safe_load_all(stream))
+              if not any(document for document in documents):
+                  raise SystemExit(f"No Kubernetes object found in {path}")
+
+          print(f"Parsed {len(files)} rendered YAML files")
+          PY
+      - name: Test the GitOps promotion helper
+        run: python -m unittest discover -s scripts/tests -v

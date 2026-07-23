@@ -4,7 +4,11 @@ kind: PodDisruptionBudget
 metadata:
   name: {{ include "releaseops-service.fullname" . }}
 spec:
+  {{- if ne .Values.podDisruptionBudget.minAvailable nil }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "releaseops-service.name" . }}

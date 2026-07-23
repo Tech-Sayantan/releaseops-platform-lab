@@ -1,0 +1,17 @@
+@Library('releaseops-shared@2.0.0') _
+
+releaseOpsServicePipeline(
+    serviceName: 'release-service',
+    appDirectory: 'services/release-service',
+    dockerfile: 'services/release-service/Dockerfile',
+    agentLabel: 'linux-docker',
+    sonarInstallation: 'sonarqube',
+    awsRegion: 'us-east-1',
+    awsAccountId: '123456789012',
+    awsRoleName: 'jenkins-releaseops-ci',
+    ecrRegistry: '123456789012.dkr.ecr.us-east-1.amazonaws.com',
+    ecrRepository: 'releaseops-dev/api',
+    gitOpsValuesFile: 'gitops/environments/dev/services/release-service-values.yaml',
+    gitOpsEnvironment: 'dev',
+    gitHubTokenCredentialId: 'releaseops-github-app-token'
+)

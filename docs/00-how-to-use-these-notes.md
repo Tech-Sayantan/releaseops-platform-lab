@@ -1,6 +1,6 @@
 # How To Use These Notes
 
-Last updated: 2026-07-18
+Last updated: 2026-07-24
 
 These notes are not only project documentation. They are interview revision
 notes.
@@ -65,13 +65,19 @@ while tired.
 
 Recommended order:
 
-1. [Terraform Backend Notes](02-terraform-backend-notes.md)
-2. [Networking Deep Dive](03-networking-deep-dive.md)
-3. [RDS Networking Notes](05-rds-networking-notes.md)
-4. [ECR Deep Dive](07-ecr-deep-dive.md)
-5. [SQS And DLQ Deep Dive](08-sqs-dlq-deep-dive.md)
-6. [Real-World DevOps Tickets](06-real-world-devops-tickets.md)
-7. [Interview Cheatsheet](04-interview-cheatsheet.md)
+1. [Production CI/CD, Release, And GitOps Deep Dive](24-cicd-release-gitops-deep-dive.md)
+2. [CI/CD And GitOps Troubleshooting Playbook](25-cicd-troubleshooting-playbook.md)
+3. [Helm, GitOps, And CI/CD Deep Dive](14-helm-gitops-cicd-deep-dive.md)
+4. [Kubernetes Core Concepts Deep Dive](22-kubernetes-core-deep-dive.md)
+5. [Kubernetes Troubleshooting Playbook](23-kubernetes-troubleshooting-playbook.md)
+6. [Kubernetes Platform Guardrails](12-kubernetes-platform-guardrails.md)
+7. [Terraform Backend Notes](02-terraform-backend-notes.md)
+8. [Networking Deep Dive](03-networking-deep-dive.md)
+9. [RDS Networking Notes](05-rds-networking-notes.md)
+10. [ECR Deep Dive](07-ecr-deep-dive.md)
+11. [SQS And DLQ Deep Dive](08-sqs-dlq-deep-dive.md)
+12. [Real-World DevOps Tickets](06-real-world-devops-tickets.md)
+13. [Interview Cheatsheet](04-interview-cheatsheet.md)
 
 ## Important Promise
 

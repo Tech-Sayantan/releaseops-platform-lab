@@ -6,3 +6,5 @@ resources:
   - releaseops-serviceaccounts.yaml
   - releaseops-resourcequota.yaml
   - releaseops-limitrange.yaml
+  - releaseops-default-deny.yaml
+  - releaseops-support-rbac.yaml
