@@ -90,10 +90,12 @@ Completed:
   reference objects.
 - GitOps reference added with Argo CD AppProject, ApplicationSet, and dev
   values files.
-- GitHub Actions reference workflows added for credential-free Terraform PR
-  validation, trusted main-branch Terraform planning, reusable Java application
-  CI, immutable image publication, structured GitOps promotion, and Helm
-  validation.
+- GitHub Actions workflows added for credential-free Terraform PR validation,
+  trusted main-branch Terraform planning, application PR CI, reusable Java
+  application CI, immutable image publication, structured GitOps promotion, and
+  Helm validation.
+- Application CI/CD wiring now runs app PR validation automatically and can
+  publish/promote `release-service` from `main`.
 - Composite release-metadata action added to demonstrate reusable custom action
   design without confusing notification with enforced approval.
 - Jenkins Declarative Pipeline and Shared Library references added for Maven,
@@ -147,7 +149,8 @@ Do not treat these IDs as permanent. Verify live state before using them.
 Not live-deployed yet:
 
 - Argo CD applications
-- full Java service implementation
+- full Java service implementation beyond the compact `release-service`
+  reference API
 - full observability stack
 - external ingress and domain wiring
 - reference application Deployments, Services, HPAs, PDBs, and NetworkPolicies

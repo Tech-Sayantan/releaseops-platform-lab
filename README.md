@@ -66,8 +66,9 @@ Completed:
   StorageClass/PVC behavior, DaemonSet, Pod Security Admission, default-deny
   networking, and namespace-scoped support RBAC.
 - GitOps reference with Argo CD AppProject and ApplicationSet.
-- GitHub Actions reference workflows for infrastructure PR checks, reusable
-  Java CI, immutable image publication, GitOps promotion, and Helm validation.
+- GitHub Actions workflows for application PR CI, main-branch immutable image
+  publication, GitOps promotion PRs, infrastructure PR checks, reusable Java
+  CI, and Helm validation.
 - Reusable GitHub composite action for validated release metadata.
 - Jenkins Declarative Pipeline and Shared Library references for the same
   build-once and GitOps-promotion model.
@@ -78,7 +79,8 @@ Completed:
 
 Not live-deployed yet:
 
-- Full Java business implementation.
+- Full Java business implementation beyond the compact `release-service`
+  reference API.
 - Live Argo CD deployment of the reference applications.
 - Full observability stack rollout.
 

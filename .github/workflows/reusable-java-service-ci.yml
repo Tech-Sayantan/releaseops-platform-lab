@@ -77,7 +77,12 @@ jobs:
 
       - name: Run Maven verification lifecycle
         working-directory: ${{ inputs.working_directory }}
-        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+        run: |
+          if [[ -x ./mvnw ]]; then
+            ./mvnw --batch-mode --no-transfer-progress clean verify
+          else
+            mvn --batch-mode --no-transfer-progress clean verify
+          fi
 
       - name: Require the Sonar token
         if: ${{ inputs.sonar_enabled }}
@@ -96,14 +101,20 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
         run: |
-          ./mvnw \
-            --batch-mode \
-            --no-transfer-progress \
-            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.host.url="${SONAR_HOST_URL}" \
-            -Dsonar.token="${SONAR_TOKEN}" \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.qualitygate.timeout=300
+          if [[ -x ./mvnw ]]; then
+            maven_command=(./mvnw)
+          else
+            maven_command=(mvn)
+          fi
+
+          "${maven_command[@]}" \
+              --batch-mode \
+              --no-transfer-progress \
+              org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+              -Dsonar.host.url="${SONAR_HOST_URL}" \
+              -Dsonar.token="${SONAR_TOKEN}" \
+              -Dsonar.qualitygate.wait=true \
+              -Dsonar.qualitygate.timeout=300
 
       - name: Upload unit and integration test reports
         if: always()

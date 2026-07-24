@@ -6,15 +6,18 @@ decision tables, and speakable answers.
 
 ## 1. What Exists In This Repository
 
-The repository contains a production-shaped reference, but not every pipeline
-has been executed against a real application repository.
+The repository contains a production-shaped reference plus one compact Java
+`release-service` so the application pipeline has a real Maven build target.
+Some deployment steps are still reference paths because no live Argo CD
+promotion has been run from this workflow.
 
 | Area | Reference | Current truth |
 | --- | --- | --- |
 | Terraform PR validation | `.github/workflows/infra-pr.yml` | Credential-free static validation exists |
 | Trusted Terraform plan | `.github/workflows/infra-plan-reference.yml` | Manual main-branch reference exists; not dispatched here |
-| Java service CI | `.github/workflows/reusable-java-service-ci.yml` | Reusable reference; application source is not stored here |
-| GitOps promotion | `.github/workflows/reusable-gitops-promotion.yml` | Reusable reference; no promotion PR has been run |
+| App CI/CD caller | `.github/workflows/app-ci-reference.yml` | PR validation, main-branch image publish, and dev GitOps promotion wiring |
+| Java service CI | `.github/workflows/reusable-java-service-ci.yml` | Reusable Maven verify, optional Sonar, ECR publish, and Trivy scan workflow |
+| GitOps promotion | `.github/workflows/reusable-gitops-promotion.yml` | Opens a GitOps PR with the immutable image digest |
 | Composite action | `.github/actions/release-metadata/action.yml` | Real reusable metadata logic |
 | Jenkins | `jenkins/` | Study reference; no Jenkins controller is connected |
 | Helm validation | `.github/workflows/gitops-validate.yml` | Workflow code exists |
@@ -22,9 +25,119 @@ has been executed against a real application repository.
 
 This distinction is interview-safe:
 
-> I built and locally validated a production-shaped CI/CD and GitOps reference.
-> I can explain the execution model and failure handling, but I do not claim
-> that the reference Jenkins pipeline was executed on a live controller.
+> I built a production-shaped CI/CD and GitOps reference. Application PRs run
+> Maven validation, main-branch app changes can publish an immutable ECR image,
+> and deployment is proposed through a GitOps PR. I can explain the execution
+> model and failure handling, but I do not claim that the reference Jenkins
+> pipeline was executed on a live controller.
+
+### Current Automated App CI/CD Chain
+
+When a developer opens a pull request that changes application files, this
+workflow starts:
+
+```text
+.github/workflows/app-ci-reference.yml
+```
+
+For a pull request, it calls:
+
+```text
+.github/workflows/reusable-java-service-ci.yml
+```
+
+and runs the `verify` job:
+
+```text
+checkout code
+setup Java 21
+cache Maven dependencies
+mvn clean verify
+upload test reports
+```
+
+On a pull request, the pipeline does **not** push an image to ECR. The reason is
+simple: PR code should prove it builds and tests cleanly before it receives
+release privileges.
+
+When application code is pushed to `main`, the same caller workflow runs again,
+but now it enables image publishing:
+
+```text
+main branch app change
+  -> Application CI/CD
+  -> reusable Java CI
+  -> Maven verify
+  -> GitHub OIDC to AWS
+  -> ECR login
+  -> release metadata action
+  -> Docker build and push
+  -> Trivy image scan
+  -> image digest output
+```
+
+If the image was built and a digest exists, the workflow then calls:
+
+```text
+.github/workflows/reusable-gitops-promotion.yml
+```
+
+That promotion workflow updates:
+
+```text
+gitops/environments/dev/services/release-service-values.yaml
+```
+
+with the new immutable image digest, then opens a GitOps pull request.
+
+After that, deployment is intentionally Git-based:
+
+```text
+promotion PR opened
+  -> GitOps validation runs
+  -> human review and merge
+  -> Argo CD sees Git changed
+  -> Argo CD syncs Kubernetes
+```
+
+The important interview point:
+
+> CI builds and scans the artifact. CD does not run `kubectl apply` from the
+> CI runner. CD proposes a GitOps change. Argo CD is the component that applies
+> the desired state to Kubernetes.
+
+### Current Trigger Matrix
+
+| Developer action | Workflow that starts | What happens |
+| --- | --- | --- |
+| PR changes `app/**` | `Application CI/CD` | Maven tests run, no ECR push |
+| Push to `main` changes `app/**` | `Application CI/CD` | Maven tests, ECR push, Trivy scan, GitOps PR |
+| PR changes `charts/**` or `gitops/**` | `GitOps Validation` | Helm lint/render and YAML/Python validation |
+| PR changes `infra/**` | `Infra PR Static Validation` | Terraform fmt/init/validate without AWS credentials |
+| Manual trusted infra plan | `Trusted Terraform Plan Reference` | OIDC to AWS, real backend init, saved Terraform plan |
+
+### Why PR And Main Behave Differently
+
+PR pipelines should be strict but low-privilege. They should answer:
+
+```text
+Does this code build?
+Do tests pass?
+Does the chart render?
+Does Terraform syntax validate?
+```
+
+Main-branch release pipelines can have more privilege, but only through
+short-lived identity. They answer:
+
+```text
+Can this reviewed code become a release artifact?
+Can we publish the exact immutable image?
+Can we propose a controlled GitOps deployment?
+```
+
+That separation stops an unreviewed PR from casually touching AWS or a
+Kubernetes cluster.
 
 ## 2. CI, Delivery, Deployment, And GitOps
 

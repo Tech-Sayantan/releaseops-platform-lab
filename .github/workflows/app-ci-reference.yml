@@ -1,6 +1,20 @@
-name: Application CI Caller Reference
+name: Application CI/CD
 
 on:
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/actions/release-metadata/action.yml"
+      - ".github/workflows/app-ci-reference.yml"
+      - ".github/workflows/reusable-java-service-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/actions/release-metadata/action.yml"
+      - ".github/workflows/app-ci-reference.yml"
+      - ".github/workflows/reusable-java-service-ci.yml"
   workflow_dispatch:
     inputs:
       service_name:
@@ -11,13 +25,23 @@ on:
       working_directory:
         description: Directory containing pom.xml and Docker context
         required: true
-        default: services/release-service
+        default: app/services/release-service
         type: string
       dockerfile:
         description: Dockerfile path relative to repository root
         required: true
-        default: services/release-service/Dockerfile
+        default: app/docker/Dockerfile.spring-boot
         type: string
+      publish_image:
+        description: Build and push an immutable image to ECR
+        required: true
+        default: false
+        type: boolean
+      promote_dev:
+        description: Open a GitOps PR for the dev environment
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -26,12 +50,39 @@ jobs:
   ci:
     permissions:
       contents: read
+      id-token: write
+      security-events: write
     uses: ./.github/workflows/reusable-java-service-ci.yml
     with:
-      service_name: ${{ inputs.service_name }}
-      working_directory: ${{ inputs.working_directory }}
-      dockerfile: ${{ inputs.dockerfile }}
+      service_name: ${{ github.event.inputs.service_name || 'release-service' }}
+      working_directory: ${{ github.event.inputs.working_directory || 'app/services/release-service' }}
+      dockerfile: ${{ github.event.inputs.dockerfile || 'app/docker/Dockerfile.spring-boot' }}
       ecr_repository: releaseops-dev/api
       java_version: "21"
       sonar_enabled: false
-      push_image: false
+      push_image: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.inputs.publish_image == 'true' }}
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_APP_PUBLISH_ROLE_ARN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  promote-dev:
+    name: Propose dev GitOps promotion
+    if: >-
+      ${{
+        needs.ci.outputs.image_digest != '' &&
+        (
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          github.event.inputs.promote_dev == 'true'
+        )
+      }}
+    needs: ci
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/reusable-gitops-promotion.yml
+    with:
+      service_name: ${{ github.event.inputs.service_name || 'release-service' }}
+      environment: dev
+      values_file: gitops/environments/dev/services/release-service-values.yaml
+      image_repository: 923988301700.dkr.ecr.us-east-1.amazonaws.com/releaseops-dev/api
+      image_digest: ${{ needs.ci.outputs.image_digest }}
