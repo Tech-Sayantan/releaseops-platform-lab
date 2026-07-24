@@ -5,14 +5,38 @@ an AWS EKS-based release-management system with Terraform, RDS PostgreSQL,
 Java/Spring Boot services, Docker, Helm, GitHub Actions, Argo CD, GitOps,
 observability, autoscaling, troubleshooting drills, and a verified teardown.
 
-This repository now contains the built AWS/EKS foundation plus reference
-application, Helm, GitOps, CI/CD, Python automation, troubleshooting, and
-interview-prep notes. The final stretch is optimized for study and discussion,
-not for spending the last prep days hand-coding CRUD.
+This repository now contains the built-and-teardown AWS/EKS foundation plus
+reference application, Helm, GitOps, CI/CD, Python automation,
+troubleshooting, and interview-prep notes. The final stretch is optimized for
+study and discussion, not for spending the last prep days hand-coding CRUD.
+
+## Teardown Status
+
+The paid dev stack was destroyed on 2026-07-24 with Terraform:
+
+```text
+Apply complete! Resources: 0 added, 0 changed, 60 destroyed.
+```
+
+The expensive lab resources are no longer live:
+
+- EKS cluster and managed node group
+- RDS PostgreSQL instance
+- NAT Gateway and Elastic IP
+- VPC, subnets, route tables, Internet Gateway, and S3 VPC endpoint
+- ECR repositories
+- SQS queues
+- dev IAM/OIDC roles and policies
+- database KMS key/alias and Secrets Manager secret
+
+The separate bootstrap backend remains protected by `prevent_destroy`: the S3
+state bucket and legacy DynamoDB lock table. Those are intentionally low-cost
+learning artifacts and can be cleaned up separately after the interview if
+needed.
 
 ## Current Build State
 
-Completed:
+Built during the lab:
 
 - S3 remote state backend bucket with encryption, versioning, public access
   block, and native S3 lockfile support.

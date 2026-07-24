@@ -3,8 +3,20 @@
 Last updated: 2026-07-24
 Master plan: `PROJECT_MASTER_PLAN.md`  
 Target teardown complete: 2026-07-26
+Actual paid dev-stack teardown: 2026-07-24
 
 ## Current State
+
+The paid dev Terraform stack has been destroyed:
+
+```text
+Apply complete! Resources: 0 added, 0 changed, 60 destroyed.
+```
+
+`terraform state list` from `infra/envs/dev` now returns no managed resources.
+The separate bootstrap backend still exists because it is protected with
+`prevent_destroy`: S3 state bucket resources plus the legacy DynamoDB lock
+table.
 
 Read-only cluster audit on 2026-07-23:
 
@@ -13,7 +25,7 @@ Read-only cluster audit on 2026-07-23:
 - The four workload ServiceAccounts, ResourceQuota, and LimitRange were present.
 - Application workload YAML remains a locally validated Helm/GitOps reference.
 
-Completed:
+Built during the lab:
 
 - Terraform backend bootstrap applied.
 - S3 state bucket exists with versioning, encryption, and public access block.

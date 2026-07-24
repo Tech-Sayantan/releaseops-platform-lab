@@ -1,6 +1,6 @@
 # Current Progress Notes
 
-Last updated: 2026-07-20
+Last updated: 2026-07-24
 
 ## Sleepy Restart Path
 
@@ -24,9 +24,8 @@ Where exactly are we in the lab right now?
 
 ## One-Minute Restart Summary
 
-Right now the AWS foundation already exists:
+The AWS foundation was built, verified, and then destroyed to stop lab cost:
 
-- Terraform backend
 - networking
 - RDS
 - ECR
@@ -34,21 +33,21 @@ Right now the AWS foundation already exists:
 - IAM/OIDC for GitHub Actions
 - EKS cluster and one managed worker node
 - EKS managed add-ons
+- Kubernetes platform guardrails
 
-What does not exist yet:
+The paid dev stack teardown completed on 2026-07-24:
 
-- application code
-- Docker build flow
-- Helm
-- GitOps
-- observability
+```text
+Apply complete! Resources: 0 added, 0 changed, 60 destroyed.
+```
 
-So if you restart tomorrow, do not rebuild the backend, VPC, RDS, ECR, SQS, or
-IAM/OIDC. We continue from the next layer above them.
+The separate Terraform bootstrap backend still exists because it is protected
+with `prevent_destroy`: S3 backend bucket resources plus the legacy DynamoDB
+lock table.
 
 ## What Exists Right Now
 
-We have built the foundation for the ReleaseOps platform:
+We built the foundation for the ReleaseOps platform:
 
 - Terraform backend bootstrap
 - Main dev Terraform root
