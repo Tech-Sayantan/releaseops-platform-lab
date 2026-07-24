@@ -60,11 +60,14 @@ On a pull request, the pipeline does **not** push an image to ECR. The reason is
 simple: PR code should prove it builds and tests cleanly before it receives
 release privileges.
 
-When application code is pushed to `main`, the same caller workflow runs again,
-but now it enables image publishing:
+When application code is pushed to `main`, the same caller workflow runs again.
+Image publishing is enabled only when the repository variable
+`APP_RELEASE_ENABLED` is set to `true` and the AWS role secret exists. That
+keeps this public study repository from accidentally publishing into AWS on
+every documentation or reference-code push.
 
 ```text
-main branch app change
+main branch app change with APP_RELEASE_ENABLED=true
   -> Application CI/CD
   -> reusable Java CI
   -> Maven verify
@@ -111,7 +114,7 @@ The important interview point:
 | Developer action | Workflow that starts | What happens |
 | --- | --- | --- |
 | PR changes `app/**` | `Application CI/CD` | Maven tests run, no ECR push |
-| Push to `main` changes `app/**` | `Application CI/CD` | Maven tests, ECR push, Trivy scan, GitOps PR |
+| Push to `main` changes `app/**` | `Application CI/CD` | Maven tests; ECR push and GitOps PR only when `APP_RELEASE_ENABLED=true` |
 | PR changes `charts/**` or `gitops/**` | `GitOps Validation` | Helm lint/render and YAML/Python validation |
 | PR changes `infra/**` | `Infra PR Static Validation` | Terraform fmt/init/validate without AWS credentials |
 | Manual trusted infra plan | `Trusted Terraform Plan Reference` | OIDC to AWS, real backend init, saved Terraform plan |
@@ -128,7 +131,7 @@ Does Terraform syntax validate?
 ```
 
 Main-branch release pipelines can have more privilege, but only through
-short-lived identity. They answer:
+short-lived identity and an explicit release switch. They answer:
 
 ```text
 Can this reviewed code become a release artifact?

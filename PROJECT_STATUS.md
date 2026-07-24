@@ -94,8 +94,9 @@ Completed:
   trusted main-branch Terraform planning, application PR CI, reusable Java
   application CI, immutable image publication, structured GitOps promotion, and
   Helm validation.
-- Application CI/CD wiring now runs app PR validation automatically and can
-  publish/promote `release-service` from `main`.
+- Application CI/CD wiring now runs app PR/main validation automatically and
+  can publish/promote `release-service` when `APP_RELEASE_ENABLED=true` and the
+  AWS role secret is configured.
 - Composite release-metadata action added to demonstrate reusable custom action
   design without confusing notification with enforced approval.
 - Jenkins Declarative Pipeline and Shared Library references added for Maven,

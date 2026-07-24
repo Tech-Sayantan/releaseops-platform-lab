@@ -60,7 +60,7 @@ jobs:
       ecr_repository: releaseops-dev/api
       java_version: "21"
       sonar_enabled: false
-      push_image: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.inputs.publish_image == 'true' }}
+      push_image: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.APP_RELEASE_ENABLED == 'true') || github.event.inputs.publish_image == 'true' }}
     secrets:
       AWS_ROLE_ARN: ${{ secrets.AWS_APP_PUBLISH_ROLE_ARN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -71,7 +71,7 @@ jobs:
       ${{
         needs.ci.outputs.image_digest != '' &&
         (
-          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.APP_RELEASE_ENABLED == 'true') ||
           github.event.inputs.promote_dev == 'true'
         )
       }}
